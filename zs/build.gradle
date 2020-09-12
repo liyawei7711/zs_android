@@ -1,0 +1,136 @@
+apply plugin: 'com.android.application'
+
+
+
+def getGitCommit() {
+    def gitDir = new File("${new File("${rootDir}").getParent()}/.git")
+    if (!gitDir.isDirectory()) {
+        return 'non-git-build'
+    }
+
+    def cmd = 'git rev-parse HEAD'
+    def gitCommit = cmd.execute().text.trim()
+    return gitCommit
+}
+
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+
+
+    defaultConfig {
+        applicationId "com.zs"
+        multiDexEnabled true
+        minSdkVersion 18
+        targetSdkVersion 28
+        versionCode 1
+        versionName "0.1"
+        buildConfigField "String", "commit", "\"${getGitCommit()}\""
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries false
+    }
+
+    // MD5:  4F:82:4A:B1:B2:53:5A:2A:7D:85:E2:8C:14:86:FF:27
+    // SHA1: 58:C2:19:0F:5A:11:FE:B8:13:8F:EF:83:A2:88:FA:1A:CC:3A:CB:AA
+    // SHA256: 9A:1D:D3:0C:FA:1F:EB:C0:DB:92:E4:C9:EB:25:EC:55:65:5B:AF:40:F4:87:24:F2:EE:05:21:BC:D5:51:5A:B8
+    signingConfigs {
+        debug {
+            storeFile file('zs.jks')//签名文件路径
+            storePassword "123456"
+            keyAlias "zs"
+            keyPassword "123456"  //签名密码
+        }
+        release {
+            storeFile file('zs.jks')//签名文件路径
+            storePassword "123456"
+            keyAlias "zs"
+            keyPassword "123456"  //签名密码
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+            res.srcDirs = [
+                    'src/main/res',
+                    'src/main/res/layouts/welcome',
+                    'src/main/res/layouts/auth',
+                    'src/main/res/layouts/home',
+                    'src/main/res/layouts/meet',
+                    'src/main/res/layouts/local',
+                    'src/main/res/layouts/about',
+                    'src/main/res/layouts/contacts',
+                    'src/main/res/layouts/device',
+                    'src/main/res/layouts/chat',
+                    'src/main/res/layouts/map',
+                    'src/main/res/layouts/talk'
+            ]
+        }
+    }
+
+//    android.applicationVariants.all { variant ->
+//        variant.outputs.each { output ->
+//            def file = output.outputFile
+//            output.outputFile = new File(file.parent, file.name.replace(".apk", "-" + defaultConfig.versionName + ".apk"))
+//        }
+//    }
+}
+
+//为aar服务，使能找到aar的路径
+repositories {
+    flatDir {
+        dirs 'libs' //this way we can find the .aar file in libs folder
+    }
+}
+
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    annotationProcessor files('libs/injectors.jar')
+    implementation 'com.github.bumptech.glide:glide:4.0.0-RC1'
+    implementation 'com.android.support:multidex:1.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation(name: 'clothes', ext: 'aar')
+    implementation(name: 'datas', ext: 'aar')
+    implementation(name: 'rcts', ext: 'aar')
+    implementation(name: 'networks', ext: 'aar')
+    implementation(name: 'qrcode', ext: 'aar')
+    implementation(name: 'UMP_Android_Sdk', ext: 'aar')
+    implementation(name: 'views', ext: 'aar')
+    implementation(name: 'refresh_exts', ext: 'aar')
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    implementation 'com.jakewharton:butterknife:8.4.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.9'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.44'
+//    compile 'com.anupcowkur:reservoir:3.1.0'
+
+//    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+//    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+//    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+
+
+}

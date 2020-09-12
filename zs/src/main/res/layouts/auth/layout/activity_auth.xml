@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black333"
+    android:gravity="center">
+
+    <RadioGroup
+        android:id="@+id/rg_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_phone"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/left_selector_bg"
+            android:button="@null"
+            android:checked="true"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="手机号"
+            android:textColor="@color/white" />
+
+        <RadioButton
+            android:id="@+id/rb_scanner"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/right_selector_bg"
+            android:button="@null"
+            android:checked="false"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="扫码"
+            android:textColor="@color/white" />
+    </RadioGroup>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="33dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="33dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/ll_input"
+            android:gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="组    织"
+                    android:textColor="@color/white" />
+
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/all_shapke_corners"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:id="@+id/tv_org"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="请选择组织"
+                        android:textColor="@color/white" />
+
+                    <ImageView
+                        android:id="@+id/tv_org_btn"
+                        android:layout_width="30dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/zs_more" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="手机号"
+                    android:textColor="@color/white" />
+
+                <EditText
+                    android:id="@+id/tv_phone"
+                    android:layout_width="150dp"
+                    android:inputType="phone"
+                    android:textSize="14sp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/all_shapke_corners"
+                    android:gravity="center_vertical"
+                    android:padding="10dp"
+                    android:hint="请输入11位手机号"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/white"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_login"
+                android:layout_width="90dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="40dp"
+                android:background="@drawable/all_blue_shapke_corners"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/login"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <ProgressBar
+                    android:id="@+id/view_load"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:indeterminate="false"
+                    android:indeterminateDrawable="@drawable/spinner_loading_ring"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ttyy.com.coder.scanner.QRCodeScannerView
+            android:id="@+id/qr_scanner"
+            android:visibility="gone"
+            android:layout_width="150dp"
+            android:layout_height="150dp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btn_ip_set"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:paddingRight="15dp"
+                android:text="@string/sett_server"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/btn_nick_meet"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:gravity="center_vertical"
+                android:paddingLeft="15dp"
+                android:text="@string/niming_ruhui"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/btn_wuzhongxin"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:gravity="center_vertical"
+                android:paddingLeft="15dp"
+                android:text="@string/wuzhongxin"
+                android:textColor="@color/white"
+                android:visibility="visible" />
+
+        </FrameLayout>
+
+    </FrameLayout>
+
+</LinearLayout>
