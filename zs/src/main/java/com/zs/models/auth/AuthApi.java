@@ -260,7 +260,7 @@ public class AuthApi {
     public void pushGPS(Context context, BDLocation location) {
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
         int battery = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        Https.post("http://36.152.32.85:8086/aj/mediaApk/map")
+        Https.post("http://36.152.32.85:8086/aj/mediaApk/deviceTrail")
                 .addHeader("Authorization", AppDatas.Auth().getToken())
                 .addParam("accuracy", location.getLatitude())
                 .addParam("dimension", location.getLongitude())
