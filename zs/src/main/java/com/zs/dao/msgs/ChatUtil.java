@@ -11,17 +11,12 @@ import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
 import com.huaiye.sdk.sdpmsgs.social.CSendMsgToMuliteUserRsp;
 import com.huaiye.sdk.sdpmsgs.social.CSendMsgToUserRsp;
 import com.huaiye.sdk.sdpmsgs.social.SendUserBean;
-
-import org.greenrobot.eventbus.EventBus;
-
-import java.util.List;
-
 import com.zs.R;
-import com.zs.bus.NewMessage;
 import com.zs.common.AppUtils;
 import com.zs.common.ScreenNotify;
-import com.zs.dao.AppDatas;
 import com.zs.dao.auth.AppAuth;
+
+import org.greenrobot.eventbus.EventBus;
 
 import static com.zs.common.AppUtils.CAPTURE_TYPE;
 import static com.zs.common.AppUtils.CAPTURE_TYPE_INT;
@@ -33,6 +28,7 @@ import static com.zs.common.AppUtils.PLAYER_TYPE_only_audio;
 import static com.zs.common.AppUtils.STOP_CAPTURE_TYPE;
 import static com.zs.common.AppUtils.STOP_CAPTURE_TYPE_INT;
 import static com.zs.common.AppUtils.showToast;
+
 
 /**
  * author: admin
@@ -58,7 +54,7 @@ public class ChatUtil {
     }
 
     public static ChatUtil get() {
-        return ChatUtil.Holder.SINGLETON;
+        return Holder.SINGLETON;
     }
 
     /**
@@ -92,71 +88,14 @@ public class ChatUtil {
             bean.sessionName = str;
         }
 
-        ChatMessages.get().add(bean);
-
-        List<VssMessageListBean> allBean = VssMessageListMessages.get().getMessages();
-        if (allBean != null && allBean.size() > 0) {
-            boolean has = false;
-            for (VssMessageListBean temp : allBean) {
-                if (temp.sessionID.equals(bean.sessionID)) {
-                    has = true;
-                    break;
-                }
-            }
-            if (has) {
-                VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-                VssMessageListMessages.get().del(vssMessageListBean.sessionID);
-                VssMessageListMessages.get().add(vssMessageListBean);
-            } else {
-                VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-                VssMessageListMessages.get().add(vssMessageListBean);
-            }
-        } else {
-            VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-            VssMessageListMessages.get().add(vssMessageListBean);
-        }
-
         if (needSend && bean.sessionID != null)
             EventBus.getDefault().post(bean);
 
-        EventBus.getDefault().post(new NewMessage(VssMessageListMessages.get().getMessagesUnRead()));
         if (AppUtils.isHide) {
             ScreenNotify.get().wakeUpAndUnlock();
             ScreenNotify.get().openApplicationFromBackground();
             ScreenNotify.get().showScreenNotify(AppUtils.ctx, "0".equals(bean.sessionID) ? "新的广播消息" : "新的指令调度", bean.sessionName);
         }
-    }
-
-    /**
-     * 自己发送的消息
-     *
-     * @param bean
-     */
-    public void saveMySendMsg(VssMessageBean bean) {
-        ChatMessages.get().add(bean);
-
-        List<VssMessageListBean> allBean = VssMessageListMessages.get().getMessages();
-        if (allBean != null && allBean.size() > 0) {
-            boolean has = false;
-            for (VssMessageListBean temp : allBean) {
-                if (temp.sessionID.equals(bean.sessionID)) {
-                    has = true;
-                    break;
-                }
-            }
-            if (has) {
-                VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-                VssMessageListMessages.get().del(vssMessageListBean.sessionID);
-                VssMessageListMessages.get().add(vssMessageListBean);
-            } else {
-                VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-                VssMessageListMessages.get().add(vssMessageListBean);
-            }
-        } else {
-            VssMessageListBean vssMessageListBean = getVssMessageListBean(bean);
-            VssMessageListMessages.get().add(vssMessageListBean);
-        }
-
     }
 
     @NonNull
@@ -176,7 +115,7 @@ public class ChatUtil {
         vssMessageListBean.type = bean.type;
         if (TextUtils.isEmpty(bean.fromUserId)) {
             vssMessageListBean.isRead = 1;
-        } else if (bean.fromUserId.equals(AppDatas.Auth().getUserID() + "")) {
+        } else if (bean.fromUserId.equals(AppAuth.get().getUserLoginName())) {
             vssMessageListBean.isRead = 1;
         } else {
             vssMessageListBean.isRead = 0;
@@ -197,10 +136,10 @@ public class ChatUtil {
         bean.type = CAPTURE_TYPE_INT;
         bean.sessionID = "-1";
         bean.sessionName = AppUtils.getString(R.string.capture);
-        bean.fromUserDomain = AppDatas.Auth().getDomainCode();
-        bean.fromUserId = AppDatas.Auth().getUserID() + "";
-        bean.fromUserName = AppDatas.Auth().getUserName();
-        bean.fromUserName = AppDatas.Auth().getUserName();
+//        bean.fromUserDomain = AppAuth.get().getDomainCode();
+//        bean.fromUserId = AppAuth.get().getUserID() + "";
+//        bean.fromUserName = AppAuth.get().getUserName();
+//        bean.fromUserName = AppAuth.get().getUserName();
         bean.time = System.currentTimeMillis();
         bean.sessionUserList.add(new SendUserBean(userId, domain, userName));
 
@@ -222,8 +161,8 @@ public class ChatUtil {
                 });
     }
 
-    public void rspGuanMo(String fromUserId, String fromUserDomain, String fromUserName,String sessionID) {
-        com.huaiye.sdk.logger.Logger.debug("CaptureViewLayout sendPlayerMessage rspGuanMo" );
+    public void rspGuanMo(String fromUserId, String fromUserDomain, String fromUserName, String sessionID) {
+        com.huaiye.sdk.logger.Logger.debug("CaptureViewLayout sendPlayerMessage rspGuanMo");
         final VssMessageBean bean = new VssMessageBean();
         if (AppUtils.isTalk) {
             bean.content = PLAYER_TYPE_only_audio;
@@ -233,10 +172,10 @@ public class ChatUtil {
         bean.type = PLAYER_TYPE_INT;
         bean.sessionID = sessionID;
         bean.sessionName = AppUtils.getString(R.string.player);
-        bean.fromUserDomain = AppDatas.Auth().getDomainCode();
-        bean.fromUserId = AppDatas.Auth().getUserID() + "";
+//        bean.fromUserDomain = AppAuth.get().getDomainCode();
+//        bean.fromUserId = AppAuth.get().getUserID() + "";
         bean.fromUserTokenId = HYClient.getSdkOptions().User().getUserTokenId();
-        bean.fromUserName = AppDatas.Auth().getUserName();
+        bean.fromUserName = AppAuth.get().getUserLoginName();
 
         bean.sessionUserList.add(new SendUserBean(fromUserId, fromUserDomain, fromUserName));
 
@@ -263,10 +202,10 @@ public class ChatUtil {
         bean.type = STOP_CAPTURE_TYPE_INT;
         bean.sessionID = "-1";
         bean.sessionName = AppUtils.getString(R.string.capture_stop);
-        bean.fromUserDomain = AppDatas.Auth().getDomainCode();
-        bean.fromUserId = AppDatas.Auth().getUserID() + "";
-        bean.fromUserName = AppDatas.Auth().getUserName();
-        bean.fromUserName = AppDatas.Auth().getUserName();
+//        bean.fromUserDomain = AppAuth.get().getDomainCode();
+//        bean.fromUserId = AppAuth.get().getUserID() + "";
+//        bean.fromUserName = AppAuth.get().getUserName();
+//        bean.fromUserName = AppAuth.get().getUserName();
         bean.time = System.currentTimeMillis();
         bean.sessionUserList.add(new SendUserBean(toUserId, toUserDomain, toUserName));
 

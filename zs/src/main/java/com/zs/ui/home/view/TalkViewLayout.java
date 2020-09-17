@@ -67,8 +67,6 @@ import com.zs.common.SP;
 import com.zs.common.rx.CommonSubscriber;
 import com.zs.common.rx.RxUtils;
 import com.zs.common.views.WindowManagerUtils;
-import com.zs.dao.AppDatas;
-import com.zs.dao.msgs.AppMessages;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -354,7 +352,7 @@ public class TalkViewLayout extends FrameLayout implements View.OnClickListener 
         HYClient.getHYCapture().setCameraConferenceMode(HYCapture.CameraConferenceMode.PORTRAIT);
         ParamsStartTalk paramsStartTalk = SdkParamsCenter.Talk.StartTalk()
                 .setTalkMode(SdkBaseParams.TalkMode.Normal)
-                .setTalkName(AppUtils.getString(R.string.audio_start) + " " + AppDatas.Auth().getUserName() + " " + AppUtils.getString(R.string.to_start) + " " + user.strToUserName)
+                .setTalkName(AppUtils.getString(R.string.audio_start) + " " + "TEST" + " " + AppUtils.getString(R.string.to_start) + " " + user.strToUserName)
                 .setMemberMediaMode(SdkBaseParams.MediaMode.Audio)
                 .setSelfMediaMode(SdkBaseParams.MediaMode.Audio)
                 .setAutoStopCapture(true)
@@ -736,7 +734,6 @@ public class TalkViewLayout extends FrameLayout implements View.OnClickListener 
                 .setCancelClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppMessages.get().del(millis);
                         HYClient.getModule(ApiMeet.class).joinMeeting(SdkParamsCenter.Meet.JoinMeet()
                                 .setAgreeMode(SdkBaseParams.AgreeMode.Refuse)
                                 .setMeetID(temp.nMeetingID)
@@ -746,7 +743,6 @@ public class TalkViewLayout extends FrameLayout implements View.OnClickListener 
                 .setConfirmClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppMessages.get().del(millis);
                         HYClient.getModule(ApiTalk.class).quitTalking(SdkParamsCenter.Talk.QuitTalk()
                                 .setTalkDomainCode(strTalkDomainCode)
                                 .setTalkId(nTalkID)

@@ -149,8 +149,7 @@
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/btn_huiyi_jinmai" />
+                    android:layout_marginRight="10dp"/>
 
                 <TextView
                     android:id="@+id/tv_zhenlv"

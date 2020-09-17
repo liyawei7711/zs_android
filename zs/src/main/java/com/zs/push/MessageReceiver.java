@@ -38,7 +38,6 @@ import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.ChannelInvistor;
 import com.zs.bus.LocalFaceAlarm;
-import com.zs.bus.MeetInvistor;
 import com.zs.bus.NetStatusChange;
 import com.zs.bus.RefMessage;
 import com.zs.bus.ServerFaceAlarm;
@@ -46,15 +45,12 @@ import com.zs.bus.TalkInvistor;
 import com.zs.common.AlarmMediaPlayer;
 import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
-import com.zs.dao.AppDatas;
-import com.zs.dao.msgs.AppMessages;
-import com.zs.dao.msgs.CallRecordManage;
+import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.CallRecordMessage;
 import com.zs.dao.msgs.CaptureMessage;
 import com.zs.dao.msgs.ChangeUserBean;
 import com.zs.dao.msgs.ChatUtil;
 import com.zs.dao.msgs.MapMarkBean;
-import com.zs.dao.msgs.MessageData;
 import com.zs.dao.msgs.PlayerMessage;
 import com.zs.dao.msgs.StopCaptureMessage;
 import com.zs.dao.msgs.VssMessageBean;
@@ -152,12 +148,10 @@ public class MessageReceiver {
             @Override
             public void onEvent(CNotifyUserJoinTalkback cNotifyUserJoinTalkback) {
                 long millis = System.currentTimeMillis();
-                AppMessages.get().add(MessageData.from(cNotifyUserJoinTalkback, millis));
 
                 EventBus.getDefault().post(new RefMessage());
                 TalkInvistor invistor = new TalkInvistor(cNotifyUserJoinTalkback, null, millis);
                 EventBus.getDefault().post(invistor);
-                CallRecordManage.get().add(CallRecordMessage.from(invistor));
             }
         });
 
@@ -166,13 +160,9 @@ public class MessageReceiver {
             @Override
             public void onEvent(CNotifyInviteUserJoinMeeting cNotifyInviteUserJoinMeeting) {
                 long millis = System.currentTimeMillis();
-                MeetInvistor meetInvistor = new MeetInvistor(cNotifyInviteUserJoinMeeting, millis);
                 if (!cNotifyInviteUserJoinMeeting.isSelfMeetCreator()) {
-                    AppMessages.get().add(MessageData.from(cNotifyInviteUserJoinMeeting, millis));
-                    CallRecordManage.get().add(CallRecordMessage.from(meetInvistor));
                 }
                 EventBus.getDefault().post(new RefMessage());
-                EventBus.getDefault().post(meetInvistor);
             }
         });
         HYClient.getModule(ApiMeet.class).observeMeetingInviteCancel(new SdkNotifyCallback<CNotifyInviteUserCancelJoinMeeting>() {
@@ -298,7 +288,6 @@ public class MessageReceiver {
                             CNotifyInviteUserJoinMeeting meetInvite = gson.fromJson(jsonObject.getString("msgbody"), CNotifyInviteUserJoinMeeting.class);
                             try {
                                 if (meetInvite != null) {
-                                    AppMessages.get().add(MessageData.from(meetInvite, millions));
                                 }
                             } catch (Exception e) {
 
@@ -306,7 +295,6 @@ public class MessageReceiver {
                         } else if (msgBody.has("nTalkbackID")) {
 
                             CNotifyUserJoinTalkback talkInvite = gson.fromJson(jsonObject.getString("msgbody"), CNotifyUserJoinTalkback.class);
-                            AppMessages.get().add(MessageData.from(talkInvite, millions));
                         } else if (msgBody.has("strMsgbody")) {
                             VssMessageBean bean = gson.fromJson(msgBody.getString("strMsgbody"), VssMessageBean.class);
                             switch (bean.type) {
@@ -326,8 +314,8 @@ public class MessageReceiver {
                                 case BROADCAST_AUDIO_TYPE_INT:
                                 case BROADCAST_VIDEO_TYPE_INT:
                                 case BROADCAST_AUDIO_FILE_TYPE_INT:
-                                    if (!(bean.fromUserDomain.equals(AppDatas.Auth().getDomainCode())
-                                            && bean.fromUserId.equals(AppDatas.Auth().getUserID() + "")))
+                                    if (!(bean.fromUserDomain.equals(AppAuth.get().getDomainCode())
+                                            && bean.fromUserId.equals(AppAuth.get().getUserID() + "")))
                                         AlarmMediaPlayer.get().play(AlarmMediaPlayer.SOURCE_ZHILLING_VOICE);
 
                                     ChatUtil.get().saveChangeMsg(bean, true);
@@ -388,8 +376,8 @@ public class MessageReceiver {
                     case BROADCAST_AUDIO_TYPE_INT:
                     case BROADCAST_VIDEO_TYPE_INT:
                     case BROADCAST_AUDIO_FILE_TYPE_INT:
-                        if (!(bean.fromUserDomain.equals(AppDatas.Auth().getDomainCode())
-                                && bean.fromUserId.equals(AppDatas.Auth().getUserID() + "")))
+                        if (!(bean.fromUserDomain.equals(AppAuth.get().getDomainCode())
+                                && bean.fromUserId.equals(AppAuth.get().getUserID() + "")))
                             AlarmMediaPlayer.get().play(AlarmMediaPlayer.SOURCE_ZHILLING_VOICE);
 
                         ChatUtil.get().saveChangeMsg(bean, true);
@@ -406,7 +394,6 @@ public class MessageReceiver {
     private void userLogin(final CQueryUserListRsp.UserInfo resp, final CNotifyReconnectStatus cNotifyReconnectStatus) {
         try {
             EventBus.getDefault().post(new TalkInvistor(null, null, 0));
-            EventBus.getDefault().post(new MeetInvistor(null, 0));
 
             EventBus.getDefault().post(new NetStatusChange(cNotifyReconnectStatus.getConnectionStatus()));
         } catch (Exception e) {

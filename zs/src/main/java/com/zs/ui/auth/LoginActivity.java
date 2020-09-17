@@ -8,30 +8,30 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import com.huaiye.sdk.HYClient;
+import com.google.gson.Gson;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.OnClick;
 import com.ttyy.commonanno.anno.route.BindExtra;
 import com.zs.BuildConfig;
-import com.zs.MCApp;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.ErrorMsg;
 import com.zs.common.dialog.LogicDialog;
-import com.zs.dao.AppDatas;
+import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelApis;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.bean.AuthUser;
+import com.zs.models.auth.bean.ErWeiMaBean;
 import com.zs.ui.auth.holder.OrgBean;
+import com.zs.ui.home.MainZSActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +42,6 @@ import ttyy.com.coder.scanner.decode.DecodeCallback;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
-import static com.zs.common.AppUtils.ctx;
 import static com.zs.common.AppUtils.isTest;
 import static com.zs.common.AppUtils.nTestNum;
 
@@ -79,8 +78,6 @@ public class LoginActivity extends AppBaseActivity {
         super.onCreate(savedInstanceState);
         getNavigate().setVisibility(View.GONE);
 
-        HYClient.getHYCapture().stopCapture(null);
-
         rg_group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -89,22 +86,39 @@ public class LoginActivity extends AppBaseActivity {
                     qr_scanner.setVisibility(View.GONE);
                 } else {
                     ll_input.setVisibility(View.GONE);
-                    qr_scanner.startDecode();
                     qr_scanner.setVisibility(View.VISIBLE);
+                    qr_scanner.startDecodeDelay(800);
                 }
             }
         });
-//        tv_phone.setText(AppDatas.Auth().getUserLoginName());
+//        tv_phone.setText(AppAuth.get().getUserLoginName());
+
+        if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+            ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+
+                @Override
+                public void onSuccess(AuthUser authUser) {
+                    jumpToMain(false, AppAuth.get().getUserLoginName());
+                }
+
+                @Override
+                public void onFailure(HTTPResponse httpResponse) {
+                    super.onFailure(httpResponse);
+                }
+            });
+        }
 
         qr_scanner.setDecodeCallback(new DecodeCallback() {
             @Override
             public void onDecodeSuccess(String s) {
-
+                ErWeiMaBean erWeiMaBean = new Gson().fromJson(s, ErWeiMaBean.class);
+                bean = new OrgBean("", "", erWeiMaBean.server, erWeiMaBean.prot);
+                tv_phone.setText(erWeiMaBean.phone);
+                login();
             }
 
             @Override
             public void onDecodeFail(String s) {
-
             }
         });
 
@@ -155,7 +169,6 @@ public class LoginActivity extends AppBaseActivity {
                 break;
             case R.id.btn_ip_set:
                 // 设置服务器
-                startActivity(new Intent(getSelf(), SettingAddressActivity.class));
                 break;
             case R.id.tv_org_btn:
                 startActivityForResult(new Intent(LoginActivity.this, SelectOrgActivity.class), 1000);
@@ -185,7 +198,6 @@ public class LoginActivity extends AppBaseActivity {
                     }
                     String content = AppUtils.getTxtContent(file);
                     int num = Integer.parseInt(content);
-                    System.out.println("ccccccccccccccc " + file.exists() + "   " + num);
                     if (num <= 0) {
                         showToast(getString(R.string.max_num));
                         return;
@@ -209,9 +221,9 @@ public class LoginActivity extends AppBaseActivity {
         AppUtils.isMeet = false;
         AppUtils.isTalk = false;
         AppUtils.isVideo = false;
-        AppDatas.Auth().put("loginName", iphone);
+        AppAuth.get().put("loginName", iphone);
         setResult(RESULT_OK);
-        finish();
+        startActivity(new Intent(this, MainZSActivity.class));
     }
 
     void login() {
@@ -219,29 +231,33 @@ public class LoginActivity extends AppBaseActivity {
             showToast(AppUtils.getString(R.string.count_pwd_empty));
             return;
         }
-
+        if (bean == null) {
+            showToast("请选择组织");
+            return;
+        }
+        AppConstants.setAddress(bean.ip, bean.port);
         ModelApis.Auth().login(this, tv_phone.getText().toString(), new ModelCallback<AuthUser>() {
 
-                    @Override
-                    public void onPreStart(HTTPRequest httpRequest) {
-                        super.onPreStart(httpRequest);
-                        view_load.setVisibility(View.VISIBLE);
-                    }
+            @Override
+            public void onPreStart(HTTPRequest httpRequest) {
+                super.onPreStart(httpRequest);
+                view_load.setVisibility(View.VISIBLE);
+            }
 
-                    @Override
-                    public void onSuccess(AuthUser authUser) {
-                        jumpToMain(false, tv_phone.getText().toString());
-                    }
+            @Override
+            public void onSuccess(AuthUser authUser) {
+                jumpToMain(false, tv_phone.getText().toString());
+            }
 
-                    @Override
-                    public void onFailure(HTTPResponse httpResponse) {
-                        super.onFailure(httpResponse);
-                        view_load.setVisibility(View.GONE);
-                        if (!TextUtils.isEmpty(httpResponse.getErrorMessage())) {
-                            showToast(ErrorMsg.getMsg(httpResponse.getStatusCode()));
-                        }
-                    }
-                });
+            @Override
+            public void onFailure(HTTPResponse httpResponse) {
+                super.onFailure(httpResponse);
+                view_load.setVisibility(View.GONE);
+                if (!TextUtils.isEmpty(httpResponse.getErrorMessage())) {
+                    showToast(ErrorMsg.getMsg(httpResponse.getStatusCode()));
+                }
+            }
+        });
     }
 
     void checkPermission() {
@@ -266,26 +282,6 @@ public class LoginActivity extends AppBaseActivity {
             ActivityCompat.requestPermissions(this, permissions.toArray(new String[]{}), 1000);
         }
 
-    }
-
-    long lastMillions = 0;
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            long currentMillions = System.currentTimeMillis();
-            long delta = currentMillions - lastMillions;
-            lastMillions = currentMillions;
-            if (delta < 2000) {
-                ((MCApp) ctx).gotoClose();
-                return super.onKeyDown(keyCode, event);
-            }
-
-            showToast(AppUtils.getString(R.string.double_click_exit));
-            return true;
-        }
-
-        return super.onKeyDown(keyCode, event);
     }
 
 }

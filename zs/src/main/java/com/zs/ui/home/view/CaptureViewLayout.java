@@ -3,13 +3,8 @@ package com.zs.ui.home.view;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,12 +13,12 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.baidu.location.BDLocation;
 import com.huaiye.cmf.sdp.SdpMessageBase;
 import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
@@ -34,31 +29,30 @@ import com.huaiye.sdk.sdpmsgs.video.CStartMobileCaptureRsp;
 import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.zs.MCApp;
 import com.zs.R;
+import com.zs.common.AlarmMediaPlayer;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
-import com.zs.dao.AppDatas;
+import com.zs.dao.AppConstants;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
-import com.zs.dao.msgs.CaptureMessage;
-import com.zs.dao.msgs.ChatUtil;
-import com.zs.dao.msgs.StopCaptureMessage;
+import com.zs.models.auth.AuthApi;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
-import static com.zs.common.AppUtils.CAPTURE_TYPE;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+
+import static com.zs.common.AlarmMediaPlayer.SOURCE_PERSON_VOICE;
 import static com.zs.common.AppUtils.STRING_KEY_HD1080P;
 import static com.zs.common.AppUtils.STRING_KEY_HD720P;
 import static com.zs.common.AppUtils.STRING_KEY_VGA;
 import static com.zs.common.AppUtils.STRING_KEY_camera;
 import static com.zs.common.AppUtils.STRING_KEY_capture;
-import static com.zs.common.AppUtils.STRING_KEY_false;
 import static com.zs.common.AppUtils.STRING_KEY_mPublishPresetoption;
-import static com.zs.common.AppUtils.STRING_KEY_photo;
 import static com.zs.common.AppUtils.showToast;
 import static com.zs.ui.Capture.CaptureGuanMoOrPushActivity.REQUEST_CODE_CAPTURE;
 
@@ -87,29 +81,23 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     TextView tv_fenbianlv;//分辨率
     View ll_guanlian;//案件信息
     TextView tv_anjian;//案件信息
-    TextView tv_time;//案件信息
+    View ll_start_record;//录像时间
+    TextView tv_time;//录像时间
     View view_cover;
     View fl_root;
     TextureView ttv_capture;
-    SurfaceTexture mSurfaceTexture;
-    private Camera mCamera;
 
-    ArrayList<String> userId = new ArrayList<>();
-    boolean isOfflineMode = true;//是否在线录像
     private final int CAPTURE_STATUS_NONE = 0;
     private final int CAPTURE_STATUS_STARTING = 1;
     private final int CAPTURE_STATUS_CAPTURING = 2;
 
     int captureStatus;
-    boolean isRecord;
+    boolean isStart;
     boolean isPaused;
     boolean isFromGuanMo;//是否是观摩启动
     MediaFileDaoUtils.MediaFile mMediaFile;
 
-    /**
-     * pc 客户端会多次发消息,采集开始的时候缓存起来
-     */
-    ArrayList<CaptureMessage> pendingMsg = new ArrayList<>();
+    Disposable timeDisposable;
 
     public boolean isCapture() {
         return captureStatus > CAPTURE_STATUS_NONE;
@@ -139,6 +127,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         ll_guanlian = view.findViewById(R.id.ll_guanlian);
         tv_anjian = view.findViewById(R.id.tv_anjian);
         tv_time = view.findViewById(R.id.tv_time);
+        ll_start_record = view.findViewById(R.id.ll_start_record);
         iv_start_stop = view.findViewById(R.id.iv_start_stop);
         iv_take_photo = view.findViewById(R.id.iv_take_photo);
         tv_quxiao = view.findViewById(R.id.tv_quxiao);
@@ -180,61 +169,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             }
         });
 
-        ttv_capture.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-            @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                mSurfaceTexture = surface;
-            }
-
-            @Override
-            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-            }
-
-            @Override
-            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-                return false;
-            }
-
-            @Override
-            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-            }
-        });
-
-    }
-
-    //开始预览视屏
-    private void startPreviewCamera() {
-        mCamera = Camera.open();
-        Camera.Parameters paramOld = mCamera.getParameters();
-
-        Camera.Parameters param = mCamera.getParameters();
-        switch (SP.getInteger(STRING_KEY_photo, 3)) {
-            case 1://640x480
-                param.setPictureSize(640, 480);
-                break;
-            case 2://1280x720
-                param.setPictureSize(1280, 720);
-                break;
-            case 3://1920x1080
-                param.setPictureSize(1920, 1080);
-                break;
-        }
-        mCamera.setParameters(param);
-
-        try {
-            mCamera.setPreviewTexture(mSurfaceTexture);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        ttv_capture.setAlpha(1.0f);
-        ttv_capture.setRotation(90.0f);
-        mCamera.startPreview();
-        mCamera.setParameters(paramOld);
-    }
-
-    public void toggleOnlineOffline() {
-        HYClient.getSdkOptions().Capture().setCaptureOfflineMode(isOfflineMode);
-        isOfflineMode = !isOfflineMode;
     }
 
     @Override
@@ -257,8 +191,8 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
                 break;
             case R.id.iv_start_stop:
-                if (isRecord) {
-                    isRecord = false;
+                if (isStart) {
+                    isStart = false;
                     iv_start_stop.setImageResource(R.drawable.zs_start_bg);
                     AppUtils.isCaptureLayoutShowing = false;
                     if (mMediaFile != null) {
@@ -267,7 +201,8 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                     HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
                         @Override
                         public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
-                            startPreviewVideo(null, false);
+                            stopTime();
+                            startPreviewVideo(false);
                         }
 
                         @Override
@@ -275,7 +210,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                         }
                     });
                 } else {
-                    startPreviewVideo(null, true);
+                    startPreviewVideo(true);
                 }
                 break;
             case R.id.iv_shanguang:
@@ -306,10 +241,9 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 stopCapture();
                 break;
             case R.id.iv_suofang:
-                toggleBigSmall();
                 break;
             case R.id.iv_take_photo:
-                if(isRecord) {
+                if (isStart) {
                     showToast("正在录制");
                 }
                 if (HYClient.getMemoryChecker().checkEnough()) {
@@ -325,7 +259,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                         uri = Uri.fromFile(new File(mMediaFile.getRecordPath()));
                     }
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                    ((Activity)getContext()).startActivityForResult(intent, REQUEST_CODE_CAPTURE);
+                    ((Activity) getContext()).startActivityForResult(intent, REQUEST_CODE_CAPTURE);
                 } else {
                     if (getVisibility() != GONE) {
                         ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.local_size_max));
@@ -358,7 +292,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     }
 
     public void stopCapture() {
-        isRecord = false;
+        isStart = false;
         iv_start_stop.setImageResource(R.drawable.zs_start_bg);
         if (isCapturing() || isCapturStarting()) {
             AppUtils.isCaptureLayoutShowing = false;
@@ -373,7 +307,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             }
             view_cover.setVisibility(VISIBLE);
             captureStatus = CAPTURE_STATUS_NONE;
-            userId.clear();
             if (getVisibility() != GONE) {
                 ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.stop_capture_success));
             }
@@ -388,136 +321,91 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
     }
 
-    /**
-     * 开启观摩
-     *
-     * @param bean
-     */
-    public void startCaptureFromUser(CaptureMessage bean) {
-        if (bean != null) {
-            if (!userId.contains(bean.fromUserId)) {
-                userId.add(bean.fromUserId);
-            }
-            if (isCapturStarting()) {
-                pendingMsg.add(bean);
-            }
+    private void sendPlayerMessage(CStartMobileCaptureRsp resp) {
+        if (resp != null) {
+            System.out.println("ccccccccccccccccccccccc nRecordID:" + resp.nRecordID + "   nCaptureID:" + resp.nCaptureID + "  hytoken:" + AppAuth.get().getTokenHY());
+            String playerUrl = "rtsp://"
+                    + AppConstants.getSiePlayerddressIP()
+                    + ":"
+                    + AppConstants.getSiePlayerAddressPort()
+                    + "/2337/rtsp://"
+                    + AppAuth.get().getTokenHY()
+                    + ":"
+                    + AppConstants.getSiePlayerAddressPort()
+                    + "?BitRate=512;FrameRate=25;IFrame=100;DmgType=2337";
+            AuthApi.get().changeCapture(getContext(), playerUrl, true);
+            AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
         }
+    }
 
-        if (isCapturing()) {
-            setVisibility(VISIBLE);
-            sendPlayerMessage();
+    public void startPreviewVideo(final boolean isStart) {
+        this.isStart = isStart;
+        mMediaFile = MediaFileDaoUtils.get().getVideoRecordFile();
+        final Capture.Params params;
+        if (isStart) {
+            HYClient.getSdkOptions().Capture().setCaptureOfflineMode(false);
+            params = Capture.Params.get()
+                    .setEnableServerRecord(true)
+                    .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT)
+                    .setRecordPath(mMediaFile.getRecordPath())
+                    .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
+                    .setPreview(ttv_capture);
+            iv_start_stop.setImageResource(R.drawable.zs_start_rec_bg);
         } else {
-
+            HYClient.getSdkOptions().Capture().setCaptureOfflineMode(true);
+            params = Capture.Params.get()
+                    .setEnableServerRecord(false)
+                    .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT)
+                    .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
+                    .setPreview(ttv_capture);
         }
+        ((Activity) getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        ttv_capture.getLayoutParams().height = calcHeightHeight();
 
-    }
+        toggleShuiYin(MCApp.getInstance().locationService.getCurrentBDLocation());
+        setVisibility(VISIBLE);
+        AppUtils.isCaptureLayoutShowing = true;
+        captureStatus = CAPTURE_STATUS_STARTING;
 
-    /**
-     * 关闭观摩
-     *
-     * @param bean
-     */
-    public void stopCaptureFromUser(StopCaptureMessage bean) {
-        if (userId.contains(bean.fromUserId)) {
-            userId.remove(bean.fromUserId);
-        }
-        if (userId.size() <= 0) {
-            if (isFromGuanMo) {
-                stopCapture();
-            }
-        }
+        if (HYClient.getHYCapture().isCapturing()) {
+            HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+                @Override
+                public void onSuccess(CStopMobileCaptureRsp resp) {
+                    // 停止采集成功
+                    startCapture(params, isStart);
+                }
 
-    }
+                @Override
+                public void onError(ErrorInfo errorInfo) {
+                    // 停止采集失败
+                }
 
-    private void sendPlayerMessage() {
-        if (pendingMsg.size() > 0) {
-            for (int i = 0; i < pendingMsg.size(); i++) {
-                CaptureMessage user = pendingMsg.get(i);
-                ChatUtil.get().rspGuanMo(user.fromUserId, user.fromUserDomain, user.fromUserName, user.sessionID);
-            }
-//            pendingMsg.clear();
-        }
-    }
-
-    public void startPreviewVideo(final CaptureMessage users, boolean localRecord) {
-        if (users != null) {
-            pendingMsg.add(users);
-        }
-        if (users != null) {
-            iv_start_stop.performClick();
+            });
         } else {
-            mMediaFile = MediaFileDaoUtils.get().getVideoRecordFile();
-
-            boolean captureType = Boolean.parseBoolean(SP.getParam(CAPTURE_TYPE, STRING_KEY_false).toString());
-            if (captureType) {
-                HYClient.getSdkOptions().Capture().setCaptureOfflineMode(true);
-            } else {
-                HYClient.getSdkOptions().Capture().setCaptureOfflineMode(false);
-            }
-            final Capture.Params params;
-            if (localRecord) {
-                params = Capture.Params.get()
-                        .setEnableServerRecord(false)
-                        .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT)
-                        .setRecordPath(mMediaFile.getRecordPath())
-                        .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
-                        .setPreview(ttv_capture);
-                isRecord = true;
-                iv_start_stop.setImageResource(R.drawable.zs_start_rec_bg);
-            } else {
-                params = Capture.Params.get()
-                        .setEnableServerRecord(false)
-                        .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT)
-                        .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
-                        .setPreview(ttv_capture);
-            }
-            toggleShuiYin();
-            ((Activity) getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            getLayoutParams().height = calcHeightHeight();
-
-            setVisibility(VISIBLE);
-            AppUtils.isCaptureLayoutShowing = true;
-            captureStatus = CAPTURE_STATUS_STARTING;
-
-            if (HYClient.getHYCapture().isCapturing()) {
-                HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
-                    @Override
-                    public void onSuccess(CStopMobileCaptureRsp resp) {
-                        // 停止采集成功
-                        startCapture(params);
-                    }
-
-                    @Override
-                    public void onError(ErrorInfo errorInfo) {
-                        // 停止采集失败
-                    }
-
-                });
-            } else {
-                startCapture(params);
-            }
+            startCapture(params, isStart);
         }
     }
 
-    private void startCapture(Capture.Params params) {
+    private void startCapture(Capture.Params params, final boolean isStart) {
         HYClient.getHYCapture().startCapture(params,
                 new Capture.Callback() {
                     @Override
                     public void onRepeatCapture() {
                         captureStatus = CAPTURE_STATUS_CAPTURING;
                         view_cover.setVisibility(GONE);
-                        sendPlayerMessage();
+                        sendPlayerMessage(null);
                     }
 
                     @Override
                     public void onSuccess(CStartMobileCaptureRsp resp) {
                         view_cover.setVisibility(GONE);
                         captureStatus = CAPTURE_STATUS_CAPTURING;
-                        if (!AppUtils.isVideo && !AppUtils.isMeet && getVisibility() != GONE) {
+                        if (isStart && !AppUtils.isVideo && !AppUtils.isMeet && getVisibility() != GONE) {
+                            startTimer();
+                            sendPlayerMessage(resp);
                             ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.capture_success));
                         }
-                        sendPlayerMessage();
-
+                        // rtsp://36.154.50.211:554/2337/rtsp://18952280597_3:554?BitRate=512;FrameRate=25;IFrame=100;DmgType=2337
                         if (iCaptureStateChangeListener != null) {
                             iCaptureStateChangeListener.onOpen();
                         }
@@ -537,32 +425,15 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 });
     }
 
-
-    public void toggleShowHide() {
-        if (!isCapturing()) {
-            return;
-        }
-
-        if (getVisibility() == VISIBLE) {
-            setVisibility(INVISIBLE);
-
-            if (iCaptureStateChangeListener != null) {
-                iCaptureStateChangeListener.hide();
-            }
-        } else {
-            setVisibility(VISIBLE);
-
-            if (iCaptureStateChangeListener != null) {
-                iCaptureStateChangeListener.show();
-            }
-        }
-    }
-
-    public void toggleShuiYin() {
+    public void toggleShuiYin(BDLocation location) {
         String strOSDCommand = "drawtext=fontfile="
                 + HYClient.getSdkOptions().Capture().getOSDFontFile()
-                + ":fontcolor=white:x=0:y=0:fontsize=52:box=1:boxcolor=black:alpha=0.8:text=' "
-                + AppDatas.Auth().getUserLoginName()
+                + ":fontcolor=white:x=0:y=0:fontsize=40:box=1:boxcolor=black:alpha=0.8:text=' "
+                + AppAuth.get().getUserLoginName()
+                + "\n"
+                + location.getLatitude()
+                + ","
+                + location.getLongitude()
                 + "'";
         // OSD名称初始化
         HYClient.getSdkOptions().Capture().setOSDCustomCommand(strOSDCommand);
@@ -574,29 +445,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
     private boolean isCapturStarting() {
         return captureStatus == CAPTURE_STATUS_STARTING;
-    }
-
-    public void toggleBigSmall() {
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (getLayoutParams().width == LayoutParams.MATCH_PARENT) {
-            layoutParams.width = AppUtils.getSize(250);
-            layoutParams.height = calcHeightHeight();
-            FrameLayout.LayoutParams lp = (LayoutParams) fl_root.getLayoutParams();
-            lp.height = LayoutParams.MATCH_PARENT;
-            fl_root.setLayoutParams(lp);
-
-        } else {
-            layoutParams.width = LayoutParams.MATCH_PARENT;
-            layoutParams.height = LayoutParams.MATCH_PARENT;
-
-            if (SP.getParam(STRING_KEY_capture, "").toString().equals(STRING_KEY_VGA)) {
-                //手机一般都是16:9的,放大后要注意4:3的情况
-                FrameLayout.LayoutParams lp = (LayoutParams) fl_root.getLayoutParams();
-                lp.height = (int) (1.3333 * Float.valueOf(AppUtils.getScreenWidth()));
-                fl_root.setLayoutParams(lp);
-            }
-        }
-        setLayoutParams(layoutParams);
     }
 
     private int calcHeightHeight() {
@@ -615,15 +463,36 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         return height;
     }
 
+    private void startTimer() {
+        stopTime();
+        ll_start_record.setVisibility(VISIBLE);
+        timeDisposable = Observable.interval(1, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long o) throws Exception {
+                        int hour = (int) (o / (60 * 60));
+                        int min = (int) ((o - hour * 3600) / 60);
+                        int second = (int) (o - hour * 3600 - min * 60);
+                        String strH, strM, strS;
+                        strH = hour < 10 ? "0" + hour : "" + hour;
+                        strM = min < 10 ? "0" + min : "" + min;
+                        strS = second < 10 ? "0" + second : "" + second;
+                        tv_time.setText(strH + ":" + strM + ":" + strS);
+                    }
+                });
+    }
+
+    private void stopTime() {
+        AuthApi.get().changeCapture(getContext(), "", false);
+        AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
+        ll_start_record.setVisibility(INVISIBLE);
+        if (timeDisposable != null && !timeDisposable.isDisposed()) {
+            timeDisposable.dispose();
+        }
+    }
+
     ICaptureStateChangeListener iCaptureStateChangeListener;
-
-    public void setiCaptureStateChangeListener(ICaptureStateChangeListener iCaptureStateChangeListener) {
-        this.iCaptureStateChangeListener = iCaptureStateChangeListener;
-    }
-
-    public void toggleCapture() {
-
-    }
 
     public interface ICaptureStateChangeListener {
         void onOpen();

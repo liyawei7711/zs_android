@@ -3,7 +3,6 @@ package com.zs.models;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.contacts.ContactsApi;
 import com.zs.models.download.DownloadApi;
-import com.zs.models.meet.MeetApi;
 
 /**
  * author: admin
@@ -23,15 +22,4 @@ public class ModelApis {
         return AuthApi.get();
     }
 
-    public static ContactsApi Contacts() {
-        return ContactsApi.get();
-    }
-
-    public static MeetApi Meet() {
-        return MeetApi.get();
-    }
-
-    public static DownloadApi Download() {
-        return DownloadApi.get();
-    }
 }

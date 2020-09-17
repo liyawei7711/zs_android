@@ -37,11 +37,9 @@ public class PhoneReceiver extends BroadcastReceiver {
         public void onCallStateChanged(int state, String incomingNumber) {
             switch (state) {
                 case TelephonyManager.CALL_STATE_IDLE:
-                    System.out.println("ccccccccccccccccccccc EMPTY");
                     EventBus.getDefault().post(EMPTY);
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
-                    System.out.println("ccccccccccccccccccccc BUSY");
                     EventBus.getDefault().post(BUSY);
                     break;
                 case TelephonyManager.CALL_STATE_RINGING:

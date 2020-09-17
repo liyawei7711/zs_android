@@ -1,23 +1,20 @@
 package com.zs.dao;
 
-import com.huaiye.cmf.JniIntf;
 import com.huaiye.sdk.HYClient;
 import com.zs.R;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
+import com.zs.ui.local.bean.FileUpload;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import ttyy.com.datasdao.Datas;
-import ttyy.com.datasdao.annos.Column;
 
 import static com.zs.common.AppUtils.CAPTURE_TYPE;
 import static com.zs.common.AppUtils.STRING_KEY_false;
-import static com.zs.dao.AppDatas.DBNAME;
+import static com.zs.common.AppUtils.STRING_KEY_save_photo;
+import static com.zs.common.AppUtils.STRING_KEY_save_video;
 
 /**
  * author: admin
@@ -53,14 +50,42 @@ public class MediaFileDaoUtils {
         return Holder.INSTANCE;
     }
 
-    public File[] getAllVideos() {
-        return mVideoDir.listFiles();
+    public ArrayList<FileUpload> getAllVideos() {
+        ArrayList<FileUpload> datas = new ArrayList<>();
+        String saveVideo = SP.getString(STRING_KEY_save_video);
+        StringBuilder sb = new StringBuilder();
+        for (File temp : mVideoDir.listFiles()) {
+            datas.add(new FileUpload(temp.getName(), temp));
+            if (saveVideo.contains(temp.getName())) {
+                sb.append(temp.getName());
+            }
+        }
+        SP.putString(STRING_KEY_save_video, sb.toString());
+        return datas;
     }
 
-    public File[] getAllImgs() {
-        return mImageDir.listFiles();
+    public ArrayList<FileUpload> getAllImgs() {
+        ArrayList<FileUpload> datas = new ArrayList<>();
+        String saveImg = SP.getString(STRING_KEY_save_photo);
+        StringBuilder sb = new StringBuilder();
+        for (File temp : mImageDir.listFiles()) {
+            datas.add(new FileUpload(temp.getName(), temp));
+            if (saveImg.contains(temp.getName())) {
+                sb.append(temp.getName());
+            }
+        }
+        SP.putString(STRING_KEY_save_photo, sb.toString());
+        return datas;
     }
 
+    public void clear() {
+        for (File temp : mImageDir.listFiles()) {
+            temp.delete();
+        }
+        for (File temp : mVideoDir.listFiles()) {
+            temp.delete();
+        }
+    }
     public MediaFile getVideoRecordFile() {
         MediaFile data = new MediaFile();
         data.nMediaType = 1;
@@ -80,15 +105,10 @@ public class MediaFileDaoUtils {
     }
 
     public static class MediaFile {
-        @Column
         private long key;
-        @Column
         public long nRecordStartTimeMillions;// 开始时间的Millions
-        @Column
         private long nRecordEndTimeMillions;// 当前时间的Millions1
-        @Column
         private String strRecordFilePath;// 文件路径
-        @Column
         private int nMediaType;// 0:图片 1:视频
 
         public boolean isSelected;// 0:图片 1:视频
@@ -105,16 +125,18 @@ public class MediaFileDaoUtils {
 
         public String getRecordName() {
             StringBuilder fileName = new StringBuilder();
-            fileName.append(getDateDetail().replace(" ", "_").replaceAll(":", "-"))
-                    .append("_android");
+            fileName.append(getDateDetail().replace(" ", "_").replaceAll(":", "-"));
+//                    .append("_android");
             if (nMediaType == 0) {
                 // 图片
                 // yyyy-MM-dd_HH:mm:ss_android_image.jpg
-                fileName.append("_image.jpg");
+//                fileName.append("_image.jpg");
+                fileName.append(".jpg");
             } else {
                 // 视频
                 // yyyy-MM-dd_HH:mm:ss_android_video.dat
-                fileName.append("_video.dat");
+//                fileName.append("_video.dat");
+                fileName.append(".dat");
 //                fileName.append("_video.mp4");
             }
             return fileName.toString();

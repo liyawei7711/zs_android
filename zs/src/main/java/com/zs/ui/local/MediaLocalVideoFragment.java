@@ -24,15 +24,17 @@ import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
 import com.zs.dao.MediaFileDaoUtils;
+import com.zs.models.ModelCallback;
+import com.zs.models.auth.AuthApi;
+import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.local.holder.VideoHolder;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * author: admin
@@ -49,8 +51,8 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     ProgressBar pb_progress;
     TextView tv_progress;
 
-    LiteBaseAdapter<File> adapter;
-    List<File> datas = new ArrayList<>();
+    LiteBaseAdapter<FileUpload> adapter;
+    List<FileUpload> datas = new ArrayList<>();
     float currentUploadedPercent = 0;
 
     @Nullable
@@ -60,7 +62,31 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(FileUpload bean) {
+        if (!bean.isImg) {
+            bean.file.delete();
+            if (datas.contains(bean)) {
+                int i = datas.indexOf(bean);
+                if (bean.isUpload == 3) {
+                    datas.remove(i);
+                    adapter.notifyItemRemoved(i);
+                } else {
+                    adapter.notifyItemChanged(i);
+                    System.out.println("ccccccccccccccccccccccccc1   " + bean.totalBytes + "," + bean.remainingBytes + "," + bean.isUpload);
+                }
+            }
+        }
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        EventBus.getDefault().register(this);
         super.onViewCreated(view, savedInstanceState);
         rcv_list = view.findViewById(R.id.rcv_list);
         ll_empty = view.findViewById(R.id.ll_empty);
@@ -77,13 +103,7 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
             }
         });
 
-        datas.addAll(Arrays.asList(MediaFileDaoUtils.get().getAllVideos()));
-        Collections.sort(datas, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return 1;
-            }
-        });
+        datas.addAll(MediaFileDaoUtils.get().getAllVideos());
 
         adapter = new LiteBaseAdapter<>(getContext(),
                 datas,
@@ -92,19 +112,24 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        MediaFileDao.MediaFile module = (MediaFileDao.MediaFile) v.getTag();
-//                        if (adapter.getMode() == TagsAdapter.Mode.MultiChoice) {
-//                            if (adapter.getSelectedPositions().size() > 0
-//                                    && adapter.getSelectedPositions().size() == adapter.getItemCount()) {
-//                                parent.setChooseAll(true);
-//                            } else {
-//                                parent.setChooseAll(false);
-//                            }
-//                        } else {
-                        Intent intent = new Intent(getActivity(), MediaLocalVideoPlayActivity.class);
-//                        intent.putExtra("path", module.getRecordPath());
-                        startActivity(intent);
-//                        }
+                        FileUpload bean = (FileUpload) v.getTag();
+                        if (v.getId() == R.id.iv_upload) {
+                            AuthApi.get().upload(adapter, bean, new ModelCallback<String>() {
+                                @Override
+                                public void onSuccess(String upload) {
+                                    adapter.notifyDataSetChanged();
+                                }
+                            });
+                        } else {
+//                            Intent intent = new Intent(Intent.ACTION_VIEW);
+//                            Uri uri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName()+".fileprovider", bean.file);
+//                            intent.setDataAndType(uri, "video/*");
+//                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                            startActivity(intent);
+                            Intent intent = new Intent(getActivity(), MediaLocalVideoPlayActivity.class);
+                            intent.putExtra("path", bean.file.getAbsolutePath());
+                            startActivity(intent);
+                        }
                     }
                 }, "");
         rcv_list.setAdapter(adapter);
@@ -152,24 +177,6 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
 
     @Override
     public void deleteChoosed() {
-//        List<Integer> positions = adapter.getSelectedPositions();
-//        List<MediaFileDao.MediaFile> copy = adapter.getDatasCopy();
-//
-//        List<MediaFileDao.MediaFile> dels = new ArrayList<>();
-//        for (int i = 0; i < positions.size(); i++) {
-//            int position = positions.get(i);
-//            MediaFileDao.MediaFile module = adapter.getDataForItemPosition(position);
-//
-//            copy.remove(module);
-//            dels.add(module);
-//        }
-//        datas.clear();
-//        adapter.notifyDataSetChanged();
-//
-//        MediaFileDao.get().del(dels.toArray(new MediaFileDao.MediaFile[]{}));
-//
-//        parent.setChooseAll(isAllChoosed());
-//
         showEmty();
     }
 
@@ -241,12 +248,12 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                             @Override
                             public void run() {
 
-                                List<File> copy = datas;
+                                List<FileUpload> copy = datas;
 
-                                List<File> dels = new ArrayList<>();
+                                List<FileUpload> dels = new ArrayList<>();
                                 for (int i = 0; i < uploadedIndexs.size(); i++) {
                                     int position = uploadedIndexs.get(i);
-                                    File module = datas.get(position);
+                                    FileUpload module = datas.get(position);
 
                                     copy.remove(module);
                                     dels.add(module);
@@ -281,15 +288,15 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     @Override
     public void cancelCurrentAction() {
         if (isUploading()) {
-            File module = datas.get(uploadingIndexs.get(0));
+            FileUpload module = datas.get(uploadingIndexs.get(0));
             SdpMsgStopUploadRecordReq req = new SdpMsgStopUploadRecordReq();
             req.m_fileName = module.toString();
 
             HYClient.getModule(ApiIO.class).cancelUploadVideo(taskSession);
 
-            List<File> copy = datas;
+            List<FileUpload> copy = datas;
 
-            ArrayList<File> dels = new ArrayList<>();
+            ArrayList<FileUpload> dels = new ArrayList<>();
             for (int i = 0; i < uploadedIndexs.size(); i++) {
                 int position = uploadedIndexs.get(i);
                 module = datas.get(position);
@@ -320,4 +327,18 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
         parent = parentIntf;
         showEmty();
     }
+
+    public void upLoadAll() {
+        for (FileUpload tmp : datas) {
+            if (tmp.isUpload == 0 ||
+                    tmp.isUpload == 2) {
+                AuthApi.get().upload(adapter, tmp, new ModelCallback<String>() {
+                    @Override
+                    public void onSuccess(String upload) {
+                    }
+                });
+            }
+        }
+    }
+
 }

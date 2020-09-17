@@ -86,7 +86,9 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
 
     @Override
     public void onFailure(HTTPResponse httpResponse) {
-        Log.i("MCApp", "onFailure " + httpResponse.getErrorMessage());
+        if(httpResponse != null) {
+            Log.i("MCApp", "onFailure " + httpResponse.getErrorMessage());
+        }
         onFinish(null);
     }
 

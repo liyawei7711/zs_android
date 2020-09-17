@@ -16,7 +16,9 @@ public class AuthUser implements Serializable {
 
     /**
      * msg : success
-     * userEntity : {"id":"USER320200346623235229487104","createUser":"USER320200265918680297115648","createTime":"2020-09-12 11:57:00","updateUser":"USER320200346623235229487104","updateTime":"2020-09-12 12:00:36","orderNum":null,"delFlag":"0","username":"zfjlycs","password":"99349fcf224f4e788f76ad7d4a42c92bdd262aa9d9a220331168cd2c05cfe6fc","salt":"tbsxqgVNcHyXgFHlTw3Q","cardId":"zfjlycs001","email":"","mobile":"18952280597","status":1,"deptId":"996633694769266690","nickName":"zfjlycs","position":"321","isAdmin":0,"loginTime":"2020-09-12 11:58:05","errorNum":0,"isLock":"1","token":"1","expireTime":null,"identityCard":"312321","deptCode":"320200000000","needPswUpt":"1","sexCode":"1","fzjg":"321","ssztqc":"局领导应急管理局","professionalName":"321","professionalRankCode":"1","nationCode":"1","highestEducationCode":"10","profession":"321","personnelNatureCode":"01","isJdry":"1","isFlzyzg":"1","isWt":"1","isSq":"1","isCompletion":"1","picId":null,"faceId":null,"fingerprintId":null,"zylb":"安全生产类-安全工程","lastUptPswTime":"2020/09/12 11:58","isSynData":0,"loginType":0,"mapId":null,"code":null,"roleIdList":["1032449138773577731","1032438007728295937","1019791551213432833","1062530582166138882","1001","1032438224745779201","ROLEASH001","ROLE320200343417254198644736","ADMINDATA04"],"roleNameList":"新吴区安监局执法角色,无锡市安监局执法角色,编辑执法计划角色,无锡市管理员,执法人员,锡山安监局执法角色,案审会人员,管理员1,省级权限","deptName":"局领导","encryptPassword":null,"deptNameWithFullLevel":null,"fullDeptName":null}
+     * userEntity : {"id":"USER320200346623235229487104","
+     * createUser":"USER320200265918680297115648",
+     * "createTime":"2020-09-12 11:57:00","updateUser":"USER320200346623235229487104","updateTime":"2020-09-12 12:00:36","orderNum":null,"delFlag":"0","username":"zfjlycs","password":"99349fcf224f4e788f76ad7d4a42c92bdd262aa9d9a220331168cd2c05cfe6fc","salt":"tbsxqgVNcHyXgFHlTw3Q","cardId":"zfjlycs001","email":"","mobile":"18952280597","status":1,"deptId":"996633694769266690","nickName":"zfjlycs","position":"321","isAdmin":0,"loginTime":"2020-09-12 11:58:05","errorNum":0,"isLock":"1","token":"1","expireTime":null,"identityCard":"312321","deptCode":"320200000000","needPswUpt":"1","sexCode":"1","fzjg":"321","ssztqc":"局领导应急管理局","professionalName":"321","professionalRankCode":"1","nationCode":"1","highestEducationCode":"10","profession":"321","personnelNatureCode":"01","isJdry":"1","isFlzyzg":"1","isWt":"1","isSq":"1","isCompletion":"1","picId":null,"faceId":null,"fingerprintId":null,"zylb":"安全生产类-安全工程","lastUptPswTime":"2020/09/12 11:58","isSynData":0,"loginType":0,"mapId":null,"code":null,"roleIdList":["1032449138773577731","1032438007728295937","1019791551213432833","1062530582166138882","1001","1032438224745779201","ROLEASH001","ROLE320200343417254198644736","ADMINDATA04"],"roleNameList":"新吴区安监局执法角色,无锡市安监局执法角色,编辑执法计划角色,无锡市管理员,执法人员,锡山安监局执法角色,案审会人员,管理员1,省级权限","deptName":"局领导","encryptPassword":null,"deptNameWithFullLevel":null,"fullDeptName":null}
      * server : {"mediaWebUrl":"","mediaUrl":"","mediaPort":"","mediaCharset":""}
      * code : 0
      * data : 91ac8b1ec1e919a2064ead927e905298
@@ -132,6 +134,7 @@ public class AuthUser implements Serializable {
         private String createTime;
         private String updateUser;
         private String updateTime;
+        public String hyToken;
         private Object orderNum;
         private String delFlag;
         private String username;
@@ -624,6 +627,15 @@ public class AuthUser implements Serializable {
         }
     }
 
+    public static class MediaConfigBean{
+        public String charset;
+        public String ip;
+        public String port;
+    }
+    public static class WebH5ConfigBean{
+        public String url;
+    }
+
     public static class ServerBean {
         /**
          * mediaWebUrl :
@@ -633,9 +645,30 @@ public class AuthUser implements Serializable {
          */
 
         private String mediaWebUrl;
+
         private String mediaUrl;
         private String mediaPort;
+
+        private String rtspUrl;
+        private String rtspPort;
+
         private String mediaCharset;
+
+        public String getRtspUrl() {
+            return rtspUrl;
+        }
+
+        public void setRtspUrl(String rtspUrl) {
+            this.rtspUrl = rtspUrl;
+        }
+
+        public String getRtspPort() {
+            return rtspPort;
+        }
+
+        public void setRtspPort(String rtspPort) {
+            this.rtspPort = rtspPort;
+        }
 
         public String getMediaWebUrl() {
             return mediaWebUrl;

@@ -1,20 +1,7 @@
 package com.zs.dao.msgs;
 
-import com.google.gson.Gson;
-import com.huaiye.sdk.sdkabi._params.SdkBaseParams;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
-import com.zs.R;
-import com.zs.bus.CreateMeet;
-import com.zs.bus.CreateTalkAndVideo;
-import com.zs.bus.MeetInvistor;
-import com.zs.bus.TalkInvistor;
 import com.zs.common.AppUtils;
-import com.zs.dao.AppDatas;
-import ttyy.com.datasdao.annos.Column;
+
 
 /**
  * author: admin
@@ -28,46 +15,24 @@ public class BroadcastMessage {
 
     public static final int SUCCESS = 1;
     public static final int ERROR = 2;
-    public  static final int DOWNING = 3;
+    public static final int DOWNING = 3;
 
     public static final int TYPE_AUDIO = 1;
     public static final int TYPE_VIDEO = 2;
 
 
-    @Column
     int type;
-    @Column
     int state;
-    @Column
     String down_path;
-    @Column
     String save_path;
 
-    @Column
     String userId;
-    @Column
-    String domainCode;
 
-
-    protected BroadcastMessage() {
-        userId = AppDatas.Auth().getUserID();
-        domainCode = AppDatas.Auth().getDomainCode();
-    }
-
-    public BroadcastMessage(int type,String path) {
+    public BroadcastMessage(int type, String path) {
         this.type = type;
         down_path = path;
     }
 
-
-    public static BroadcastMessage downFile(VssMessageBean message) {
-        BroadcastMessage data = new BroadcastMessage();
-        data.type = message.type == AppUtils.BROADCAST_VIDEO_TYPE_INT?BroadcastMessage.TYPE_VIDEO:BroadcastMessage.TYPE_AUDIO;
-        data.state = BroadcastMessage.DOWNING;
-        data.down_path = message.content;
-
-        return data;
-    }
 
     public int getType() {
         return type;

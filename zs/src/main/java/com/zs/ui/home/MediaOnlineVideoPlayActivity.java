@@ -25,7 +25,6 @@ import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.views.MediaRecordProgress;
-import com.zs.dao.AppDatas;
 
 /**
  * author: admin

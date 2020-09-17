@@ -9,6 +9,7 @@ import android.telephony.TelephonyManager;
 import org.greenrobot.eventbus.EventBus;
 
 import com.zs.bus.PhoneStatus;
+import com.zs.ui.auth.LoginActivity;
 import com.zs.ui.guide.WelcomeActivity;
 import com.zs.ui.home.MainZSActivity;
 
@@ -24,7 +25,7 @@ public class SelfStartReceiver extends BroadcastReceiver {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             try {
                 Thread.sleep(2000L);
-                Intent i = new Intent(context, MainZSActivity.class);
+                Intent i = new Intent(context, LoginActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(i);
             } catch (InterruptedException e) {

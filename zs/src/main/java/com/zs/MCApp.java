@@ -19,24 +19,18 @@ import com.zs.common.BatteryHelper;
 import com.zs.common.SP;
 import com.zs.common.ScreenNotify;
 import com.zs.common.views.WindowManagerUtils;
-import com.zs.dao.AppDatas;
 import com.zs.map.baidu.LocationService;
 import com.zs.models.auth.AuthApi;
 import com.zs.push.MessageReceiver;
 import com.zs.push.VolumeObserver;
 import com.zs.services.DeskService;
 import com.zs.ui.Capture.CaptureGuanMoOrPushActivity;
-import com.zs.ui.home.MainActivity;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import ttyy.com.jinnetwork.Https;
-import ttyy.com.jinnetwork.core.work.HTTPRequest;
-import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 /**
  * author: admin
@@ -72,15 +66,6 @@ public class MCApp extends MultiDexApplication {
         if (allActivity.isEmpty() && AppUtils.isHide) {
             Logger.log("强杀了");
         }
-    }
-
-    public MainActivity getMainActivity() {
-        for (AppBaseActivity temp : allActivity) {
-            if (temp instanceof MainActivity) {
-                return (MainActivity) temp;
-            }
-        }
-        return null;
     }
 
     public void stopApp() {
@@ -144,7 +129,6 @@ public class MCApp extends MultiDexApplication {
 
         SP.init(this);
         HYClient.initSdk(this);
-        AppDatas.init(this);
         AppUtils.init(this);
         SDKInitializer.initialize(this);
         MessageReceiver.get();
@@ -241,7 +225,6 @@ public class MCApp extends MultiDexApplication {
     }
 
     public void keepAlive() {
-        String URL = AppDatas.Constants().getAddressBaseURL() + "vss/httpjson/user_keep_alive";
     }
 
 

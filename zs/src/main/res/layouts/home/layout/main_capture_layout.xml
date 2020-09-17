@@ -24,7 +24,7 @@
             android:id="@+id/ttv_capture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center" />
 
         <View
             android:id="@+id/view_cover"
@@ -55,13 +55,28 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-            <TextView
-                android:id="@+id/tv_time"
+
+            <LinearLayout
+                android:id="@+id/ll_start_record"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textColor="@color/white"
-                />
+                android:visibility="invisible"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/zs_capture_start"/>
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/red"
+                    />
+            </LinearLayout>
+
 
             <ImageView
                 android:id="@+id/iv_anjian"
@@ -103,6 +118,7 @@
                 android:text="取消关联"
                 android:textColor="@color/red" />
         </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -141,8 +157,8 @@
 
             <ImageView
                 android:id="@+id/iv_camera"
-                android:layout_width="90dp"
-                android:layout_height="70dp"
+                android:layout_width="80dp"
+                android:layout_height="60dp"
                 android:duplicateParentState="true"
                 android:paddingRight="12dp"
                 android:paddingBottom="15dp"
@@ -218,8 +234,8 @@
                 android:layout_weight="1"/>
             <ImageView
                 android:id="@+id/iv_take_photo"
-                android:layout_width="90dp"
-                android:layout_height="70dp"
+                android:layout_width="80dp"
+                android:layout_height="60dp"
                 android:duplicateParentState="true"
                 android:paddingRight="12dp"
                 android:paddingBottom="15dp"

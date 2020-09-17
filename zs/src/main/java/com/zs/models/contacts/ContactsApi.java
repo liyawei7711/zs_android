@@ -1,6 +1,7 @@
 package com.zs.models.contacts;
 
-import com.zs.dao.AppDatas;
+import com.zs.dao.AppConstants;
+import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelCallback;
 import com.zs.models.contacts.bean.PersonBean;
 import com.zs.models.contacts.bean.SosPersonBean;
@@ -28,14 +29,14 @@ public class ContactsApi {
 
     public void getPerson(int nPage, int size, int nOrderByID, int nAscOrDesc,
                           final ModelCallback<PersonBean> callback) {
-        URL = AppDatas.Constants().getAddressBaseURL() + "vss/httpjson/get_user_list";
+        URL = AppConstants.getAddressBaseURL() + "vss/httpjson/get_user_list";
         Https.post(URL)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .addParam("nPage", nPage)
                 .addParam("nSize", size)
                 .addParam("nOrderByID", nOrderByID)
                 .addParam("nAscOrDesc", nAscOrDesc)
-                .addParam("strDomainCode", AppDatas.Auth().getDomainCode())
+                .addParam("strDomainCode", AppAuth.get().getDomainCode())
                 .setHttpCallback(new ModelCallback<PersonBean>() {
                     @Override
                     public void onSuccess(PersonBean personBean) {
@@ -53,9 +54,9 @@ public class ContactsApi {
                 .requestNowAsync();
     }
     public void loadSos(final ModelCallback<SosPersonBean> callback) {
-        URL = AppDatas.Constants().getAddressBaseURL() + "vss/httpjson/get_seek_help_info";
+        URL = AppConstants.getAddressBaseURL() + "vss/httpjson/get_seek_help_info";
         Https.post(URL)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .setHttpCallback(new ModelCallback<SosPersonBean>() {
                     @Override
                     public void onSuccess(SosPersonBean personBean) {

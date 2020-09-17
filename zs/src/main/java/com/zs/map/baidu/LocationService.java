@@ -7,7 +7,6 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.location.LocationClientOption.LocationMode;
 import com.huaiye.sdk.logger.Logger;
-
 import com.zs.common.SP;
 import com.zs.map.LocationStrategyHighImp;
 import com.zs.map.LocationStrategyLowImp;
@@ -35,7 +34,7 @@ public class LocationService {
     private int timeInterval = DEFAULT_LOCATION_TIME_INTERVAL;
 
     //本地GPS作为备选
-    private LocalGPSLocation  localGPSLocation;
+    private LocalGPSLocation localGPSLocation;
 
     public BDLocation getLastCity() {
         return mLocationStrategy.getLastUploadLocations();
@@ -141,10 +140,11 @@ public class LocationService {
 
     /**
      * 发送位置给LocationService,APP使用GPS定位后拿到gps信息调用此方法
+     *
      * @param bdLocation
      */
-    public void sendLocation(BDLocation bdLocation){
-        if (isStart && !isPause && mLocationStrategy != null){
+    public void sendLocation(BDLocation bdLocation) {
+        if (isStart && !isPause && mLocationStrategy != null) {
             mLocationStrategy.onReceiveGPSLocation(bdLocation);
         }
     }
@@ -222,8 +222,8 @@ public class LocationService {
         }
     }
 
-    public void requestHotSpotState(){
-        if (client != null){
+    public void requestHotSpotState() {
+        if (client != null) {
             client.requestHotSpotState();
         }
     }
@@ -253,7 +253,7 @@ public class LocationService {
     }
 
 
-    public static class LocalGPSLocation{
+    public static class LocalGPSLocation {
         public long time;
         public BDLocation location;
 

@@ -16,10 +16,11 @@ import java.util.List;
 import com.zs.R;
 import com.zs.common.AppUtils;
 import com.zs.common.ScreenNotify;
-import com.zs.dao.AppDatas;
-import com.zs.dao.msgs.BroadcastManage;
+import com.zs.dao.AppConstants;
+import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.BroadcastMessage;
-import com.zs.ui.home.MainActivity;
+import com.zs.ui.home.MainZSActivity;
+
 import ttyy.com.jinnetwork.Https;
 import ttyy.com.jinnetwork.core.callback.HTTPCallback;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
@@ -93,7 +94,7 @@ public class DownloadService extends IntentService {
             outputFile.delete();
         }
         Https.get(apkUrl)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .setDownloadMode(outputFile)
                 .setHttpCallback(new HTTPCallback() {
                     @Override
@@ -137,7 +138,7 @@ public class DownloadService extends IntentService {
     }
 
     private void downloadAudioORVideo(final String path) {
-        String downUrl = AppDatas.Constants().getFileAddressURL() + path;
+        String downUrl = AppConstants.getAddressBaseURL() + path;
         String fileName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1);
         audioVideoFile = new File(AppUtils.audiovideoPath);
 
@@ -145,12 +146,11 @@ public class DownloadService extends IntentService {
             audioVideoFile.mkdir();
         }
         Https.get(downUrl)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .setDownloadMode(new File(audioVideoFile, AppUtils.subPath(apkUrl)))
                 .setHttpCallback(new HTTPCallback() {
                     @Override
                     public void onPreStart(HTTPRequest httpRequest) {
-                        BroadcastManage.get().updateSuccess(path, BroadcastMessage.DOWNING);
                     }
 
                     @Override
@@ -159,7 +159,6 @@ public class DownloadService extends IntentService {
 
                     @Override
                     public void onSuccess(HTTPResponse httpResponse) {
-                        BroadcastManage.get().updateSuccess(path, BroadcastMessage.SUCCESS);
 //                        EventBus.getDefault().post(new BroadcastMessage(path.endsWith(".dat") ? BroadcastMessage.TYPE_VIDEO : BroadcastMessage.TYPE_AUDIO, path));
                         if (type!=-1)
                             EventBus.getDefault().post(new BroadcastMessage(type == AppUtils.BROADCAST_VIDEO_TYPE_INT ? BroadcastMessage.TYPE_VIDEO : BroadcastMessage.TYPE_AUDIO, path));
@@ -172,7 +171,6 @@ public class DownloadService extends IntentService {
 
                     @Override
                     public void onFailure(HTTPResponse httpResponse) {
-                        BroadcastManage.get().updateSuccess(path, BroadcastMessage.ERROR);
                     }
 
                     @Override
@@ -214,7 +212,7 @@ public class DownloadService extends IntentService {
 
             ActivityManager.RunningTaskInfo info = infos.get(0);
             String infoCLassName = info.topActivity.getClassName();
-            if (infoCLassName.equals(MainActivity.class.getCanonicalName())) {
+            if (infoCLassName.equals(MainZSActivity.class.getCanonicalName())) {
 
                 Intent intent = new Intent(DownloadService.this, InstallDialogActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -63,7 +63,6 @@ import com.zs.bus.AcceptDiaoDu;
 import com.zs.bus.CloseTalkVideoActivity;
 import com.zs.bus.CloseView;
 import com.zs.bus.FinishDiaoDu;
-import com.zs.bus.MeetInvistor;
 import com.zs.bus.PhoneStatus;
 import com.zs.bus.ShowChangeSizeView;
 import com.zs.bus.WaitViewAllFinish;
@@ -78,13 +77,7 @@ import com.zs.common.rx.CommonSubscriber;
 import com.zs.common.rx.RxUtils;
 import com.zs.common.views.PermissionUtils;
 import com.zs.common.views.WindowManagerUtils;
-import com.zs.dao.AppDatas;
-import com.zs.dao.msgs.AppMessages;
-import com.zs.dao.msgs.CallRecordManage;
-import com.zs.dao.msgs.VssMessageBean;
-import com.zs.dao.msgs.VssMessageListBean;
-import com.zs.dao.msgs.VssMessageListMessages;
-import com.zs.ui.chat.ChatActivity;
+import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.talk.TalkVideoActivity;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -353,36 +346,6 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
         resetCaptureSize();
         HYClient.getHYCapture().stopCapture(null);
         HYClient.getHYCapture().setCameraConferenceMode(HYCapture.CameraConferenceMode.PORTRAIT);
-        if (deviceRsp != null) {
-            if (((TalkVideoActivity) appBaseActivity).mP2PSample == null) {
-                showToast(AppUtils.getString(R.string.p2p_error_init));
-                realClose();
-                return;
-            }
-            currentIP = deviceRsp.m_strIP;
-            ((TalkVideoActivity) appBaseActivity).mP2PSample.setPlayerPreview(texture_bigger);
-            ((TalkVideoActivity) appBaseActivity).mP2PSample.setCapturePreview(texture_smaller);
-            ((TalkVideoActivity) appBaseActivity).mP2PSample.requestTalk(deviceRsp.m_strIP, new SdkCallback<SdkBaseParams.AgreeMode>() {
-                @Override
-                public void onSuccess(SdkBaseParams.AgreeMode resp) {
-                    if (resp == SdkBaseParams.AgreeMode.Refuse) {
-                        showToast(AppUtils.getString(R.string.duifang_refuse_talk_video));
-                        realClose();
-                    } else {
-                        tv_waite.setVisibility(GONE);
-                        EventBus.getDefault().post(new CloseView("TalkVideoViewLayout onAgreeTalk"));
-                        setSpeakOn();
-                    }
-                }
-
-                @Override
-                public void onError(ErrorInfo error) {
-                    showToast(ErrorMsg.getMsg(ErrorMsg.start_talk_err_code));
-                    realClose();
-                }
-            });
-            return;
-        }
 
         if (strExtParams.contains("sos")){
             iv_sos_bg.setVisibility(View.VISIBLE);
@@ -391,7 +354,7 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
         }
         HYClient.getModule(ApiTalk.class).startTalking(SdkParamsCenter.Talk.StartTalk()
                 .setTalkMode(SdkBaseParams.TalkMode.Normal)
-                .setTalkName(AppUtils.getString(R.string.video_start) + " " + AppDatas.Auth().getUserName() + " " + AppUtils.getString(R.string.to_start) + " " + user.strToUserName)
+                .setTalkName(AppUtils.getString(R.string.video_start) + " " + "TEST" + " " + AppUtils.getString(R.string.to_start) + " " + user.strToUserName)
                 .setAutoStopCapture(!AppUtils.isCaptureLayoutShowing)
                 .setOpenRecord(true)
                 .setTalkDesc(strExtParams)
@@ -834,28 +797,6 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
 //    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMeetInvite(MeetInvistor data) {
-        if (data == null) {
-            AppUtils.getTvvl_view(getContext()).closeTalkVideo(null);
-            return;
-        }
-
-        if (data.meet == null) {
-            Logger.debug("TalkVideoActivity data.talk  null");
-            closeIfTalkDisconnect();
-            return;
-        }
-        if (data.meet.nMeetingStatus != 1) {
-            return;
-        }
-
-        if (data.meet.isSelfMeetCreator()) {
-            return;
-        }
-        onMeetInvite(appBaseActivity, data.meet, data.millis);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void closeTalkVideo(CloseTalkVideoActivity bean) {
         if (AppUtils.isVideo)
             createError("567");
@@ -893,48 +834,6 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
                 && info.isTalkingStopped() && ((MCApp) ctx).getTopActivity().getLogicTimeDialog().isShowing()) {
             ((MCApp) ctx).getTopActivity().getLogicTimeDialog().dismiss();
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(VssMessageBean bean) {
-        tv_notice.setText(AppUtils.getString(R.string.receive) + bean.fromUserName + AppUtils.getString(R.string.place_watch));
-        tv_notice.setTag(bean);
-        tv_notice.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (PermissionUtils.XiaoMiMobilePermission(AppUtils.ctx)) {
-                    return;
-                }
-
-                if (appBaseActivity == null) {
-                    return;
-                }
-                VssMessageBean tag = (VssMessageBean) v.getTag();
-                if (tag == null) {
-                    return;
-                }
-
-                VssMessageListBean bean = VssMessageListMessages.get().getMessages(tag.sessionID);
-                bean.isRead = 1;
-                VssMessageListMessages.get().isRead(bean);
-
-                Intent intent = new Intent(appBaseActivity, ChatActivity.class);
-                intent.putExtra("listBean", bean);
-                appBaseActivity.startActivity(intent);
-
-                iv_change_size.performClick();
-            }
-        });
-        tv_notice.setVisibility(VISIBLE);
-        rxUtils.doDelay(5000, new RxUtils.IMainDelay() {
-            @Override
-            public void onMainDelay() {
-                tv_notice.setText("");
-                tv_notice.setVisibility(GONE);
-            }
-        }, System.currentTimeMillis() + "");
-
     }
 
     public void onResume() {
@@ -994,18 +893,15 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
                 .setCancelClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppMessages.get().del(millis);
                         HYClient.getModule(ApiMeet.class).joinMeeting(SdkParamsCenter.Meet.JoinMeet()
                                 .setAgreeMode(SdkBaseParams.AgreeMode.Refuse)
                                 .setMeetID(temp.nMeetingID)
                                 .setMeetDomainCode(temp.strMeetingDomainCode), null);
-                        CallRecordManage.get().updateCall(temp.nMsgSessionID);
                     }
                 })
                 .setConfirmClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppMessages.get().del(millis);
                         if (!TextUtils.isEmpty(strTalkDomainCode)) {
                             HYClient.getModule(ApiTalk.class).quitTalking(SdkParamsCenter.Talk.QuitTalk()
                                     .setTalkDomainCode(strTalkDomainCode)
@@ -1087,18 +983,15 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
                     @Override
                     public void onClick(View v) {
                         // 会议中不接受对讲
-                        AppMessages.get().del(millis);
                         HYClient.getModule(ApiTalk.class).joinTalking(SdkParamsCenter.Talk.JoinTalk()
                                 .setAgreeMode(SdkBaseParams.AgreeMode.Refuse)
                                 .setTalkId(data.nTalkbackID)
                                 .setTalkDomainCode(data.strTalkbackDomainCode), null);
-                        CallRecordManage.get().updateCall(data.nMsgSessionID);
                     }
                 }).setConfirmClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                AppMessages.get().del(millis);
                 isChangeTalk = true;
                 String tempDomainCode = strTalkDomainCode;
                 int tempnTalkID = nTalkID;
@@ -1118,7 +1011,6 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
                     public void onSuccess(CQuitTalkbackRsp cQuitTalkbackRsp) {
 
                         if (data.getRequiredMediaMode() == SdkBaseParams.MediaMode.AudioAndVideo) {
-                            CallRecordManage.get().updateCall(data.nMsgSessionID);
                             isTalkStarter = false;
                             toUser = null;
                             joinTalk(strTalkDomainCode, nTalkID, udpMsg);

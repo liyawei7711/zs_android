@@ -4,9 +4,10 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import com.zs.dao.auth.AppAuth;
+
 import java.io.File;
 
-import com.zs.dao.AppDatas;
 import ttyy.com.jinnetwork.Https;
 import ttyy.com.jinnetwork.core.callback.HTTPCallback;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
@@ -31,7 +32,7 @@ public class UpdateService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         Https.get("ddd")
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .setDownloadMode(new File("dd"))
                 .setHttpCallback(new HTTPCallback() {
                     @Override

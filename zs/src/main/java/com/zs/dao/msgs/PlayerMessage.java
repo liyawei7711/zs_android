@@ -1,8 +1,5 @@
 package com.zs.dao.msgs;
 
-import com.zs.models.contacts.bean.PersonModelBean;
-import com.zs.models.device.bean.DevicePlayerBean;
-
 /**
  * author: admin
  * date: 2018/05/30

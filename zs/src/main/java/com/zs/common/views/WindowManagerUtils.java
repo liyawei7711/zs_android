@@ -21,8 +21,6 @@ import com.zs.bus.CloseEvent;
 import com.zs.common.AppUtils;
 import com.zs.ui.home.view.TalkVideoViewLayout;
 import com.zs.ui.home.view.TalkViewLayout;
-import com.zs.ui.meet.MeetActivity;
-import com.zs.ui.meet.MeetViewLayoutNew;
 import com.zs.ui.talk.TalkVideoActivity;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -128,11 +126,7 @@ public class WindowManagerUtils {
         if (showView == null) {
             showView = new SimpleView(ctx);
         }
-
-        if (simpleView instanceof MeetViewLayoutNew) {
-            showView.setTileName(AppUtils.getString(R.string.meet_diaodu_ing));
-            showView.setLogo(R.drawable.huiyitonghua);
-        } else if (simpleView instanceof TalkVideoViewLayout) {
+       if (simpleView instanceof TalkVideoViewLayout) {
             showView.setTileName(AppUtils.getString(R.string.video_diaodu_ing));
             showView.setLogo(R.drawable.shipingtonghua);
         } else if (simpleView instanceof TalkViewLayout) {
@@ -144,9 +138,7 @@ public class WindowManagerUtils {
             @Override
             public void onClick(View v) {
                 closeAll(false);
-                if (simpleView instanceof MeetViewLayoutNew) {
-                    MeetActivity.stratMeet(MCApp.getInstance().getTopActivity(), false, "", 1, 1, null);
-                } else if (simpleView instanceof TalkVideoViewLayout) {
+                if (simpleView instanceof TalkVideoViewLayout) {
                     TalkVideoActivity.joinTalk(MCApp.getInstance().getTopActivity(), "", -1, null);
                 } else if (simpleView instanceof TalkViewLayout) {
                     EventBus.getDefault().post(new CloseEvent());

@@ -33,11 +33,9 @@ import java.util.Map;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.AcceptDiaoDu;
-import com.zs.bus.CloseEvent;
 import com.zs.bus.LocalFaceAlarm;
 import com.zs.bus.LogoutBean;
 import com.zs.bus.LowPowerMsg;
-import com.zs.bus.MeetInvistor;
 import com.zs.bus.NetStatusChange;
 import com.zs.bus.ServerFaceAlarm;
 import com.zs.bus.TalkInvistor;
@@ -46,20 +44,20 @@ import com.zs.common.dialog.LogicTimeDialog;
 import com.zs.common.dialog.ZeusLoadView;
 import com.zs.common.rx.RxUtils;
 import com.zs.common.views.NavigateView;
-import com.zs.dao.AppDatas;
+import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.CaptureMessage;
-import com.zs.dao.msgs.CaptureZhiFaMessage;
+import com.zs.bus.CaptureZhiFaMessage;
 import com.zs.dao.msgs.PlayerMessage;
-import com.zs.dao.msgs.ZhiFaClickMessage;
+import com.zs.bus.ZhiFaClickMessage;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.KickOutUIObserver;
 import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.auth.LoginActivity;
-import com.zs.ui.auth.SettingAddressActivity;
 import com.zs.ui.guide.WelcomeActivity;
 import com.zs.ui.home.KeyCodeSettingActivity;
-import com.zs.ui.home.MainActivity;
+import com.zs.ui.home.MainZSActivity;
+
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 import static com.zs.common.AppUtils.ctx;
@@ -115,7 +113,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
 
 
         //在安卓4.4上,硬件加速会耗费大量的内存,4.4的手机内存普遍不高.会造成绘制错误,所以在4.4以及以下停用硬件加速
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT && !(this instanceof MainActivity) && !jiaSuDevice.contains(Build.MODEL)) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT && !(this instanceof MainZSActivity) && !jiaSuDevice.contains(Build.MODEL)) {
             contentView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             getWindow().getDecorView().setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             Log.d("FEIFEIFEI", " not open hard layer");
@@ -168,8 +166,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
         }
         // 后台接受消息
         if (AppBaseActivity.this instanceof LoginActivity ||
-                AppBaseActivity.this instanceof WelcomeActivity ||
-                AppBaseActivity.this instanceof SettingAddressActivity) {
+                AppBaseActivity.this instanceof WelcomeActivity) {
             return;
         }
         PushService.actionStop(this);
@@ -179,7 +176,6 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     protected void onStop() {
         super.onStop();
         if (AppBaseActivity.this instanceof LoginActivity ||
-                AppBaseActivity.this instanceof SettingAddressActivity ||
                 AppBaseActivity.this instanceof WelcomeActivity) {
             return;
         }
@@ -191,7 +187,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                     Logger.debug("pushService onReceiverMsg " + cSetKeepAliveIntervalRsp.toString());
                     Logger.debug("pushService onReceiverMsg  isStop " + b);
                 }
-                if (AppBaseActivity.this instanceof MainActivity) {
+                if (AppBaseActivity.this instanceof MainZSActivity) {
                     return;
                 }
                 if (cSetKeepAliveIntervalRsp.nResultCode == 1720200007) {//彻底掉线
@@ -214,7 +210,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(AcceptDiaoDu status) {
-        if (this instanceof MainActivity) {
+        if (this instanceof MainZSActivity) {
 
         } else {
             finish();
@@ -223,7 +219,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(CGetMeetingInfoRsp status) {
-        if (this instanceof MainActivity) {
+        if (this instanceof MainZSActivity) {
 
         } else {
             finish();
@@ -282,11 +278,9 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                     onDisconnected();
                 }else {
                     // p2p超过2分钟后,业务服务器会把用户踢掉,这时候掉线再尝试下登录
-                    String account = AppDatas.Auth().getUserLoginName();
-                    String password = AppDatas.Auth().getPassword();
+                    String account = AppAuth.get().getUserLoginName();
 
-                    if (!TextUtils.isEmpty(account)
-                            && !TextUtils.isEmpty(password)) {
+                    if (!TextUtils.isEmpty(account)) {
                         AuthApi.get().login(this, account, new ModelCallback<AuthUser>() {
 
                             @Override
@@ -377,24 +371,6 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMeetInvite(MeetInvistor data) {
-
-        if (data == null) {
-            return;
-        }
-        if (data.meet == null) {
-            return;
-        }
-
-        if (AppUtils.isTalk || AppUtils.isVideo || AppUtils.isMeet) {
-            return;
-        }
-        closeWhenInvite();
-
-    }
-
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerFaceAlarm(ServerFaceAlarm data) {
 
     }
@@ -402,15 +378,6 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLocalFaceAlarm(LocalFaceAlarm data) {
 
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(CloseEvent data) {
-        if (this instanceof MainActivity) {
-
-        } else {
-            finish();
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -468,9 +435,6 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
             if (keyCode == AppUtils.ptt_key) {
                 if (isStart) {
                     isStart = false;
-                    if (MCApp.getInstance().getMainActivity() != null && MCApp.getInstance().getMainActivity().ab_title.isMyselfSpeaking) {
-                        MCApp.getInstance().getMainActivity().pttEnd();
-                    }
                 }
             }
         }
@@ -485,18 +449,13 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
             if (keyCode == AppUtils.ptt_key) {
                 if (!isStart) {
                     isStart = true;
-                    if (MCApp.getInstance().getMainActivity() != null) {
-                        MCApp.getInstance().getMainActivity().pttStart();
-                    }
                 }
             } else if (keyCode == AppUtils.sos_key) {
                 if (AppUtils.sos_key != -1) {
                     EventBus.getDefault().post(new ZhiFaClickMessage());
-                    MCApp.getInstance().getMainActivity().menu_left.tv_sos_qiuzhu.performClick();
                 }
             } else if (keyCode == AppUtils.camera_key) {
                 if (AppUtils.camera_key != -1) {
-                    MCApp.getInstance().getMainActivity().cvl_capture.iv_camera.performClick();
                 }
             } else if (keyCode == AppUtils.video_key) {
                 if (AppUtils.video_key != -1) {
@@ -504,11 +463,9 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                 }
             }else if (keyCode == AppUtils.ptt_channel_left) {
                 if (AppUtils.ptt_channel_left != -1) {
-                    MCApp.getInstance().getMainActivity().ab_title.changeChannelLeft();
                 }
             }else if (keyCode == AppUtils.ptt_channel_right) {
                 if (AppUtils.ptt_channel_right != -1) {
-                    MCApp.getInstance().getMainActivity().ab_title.changeChannelRight();
                 }
             }
         }
@@ -520,7 +477,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
      * 如果当前APP在后台,直接拉起首页
      */
     private void closeWhenInvite() {
-        if (this instanceof MainActivity) {
+        if (this instanceof MainZSActivity) {
             if (AppUtils.isHide) {
                 new Handler().postDelayed(new Runnable() {
                     @Override

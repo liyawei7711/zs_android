@@ -19,12 +19,13 @@ import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
 import com.zs.common.rx.RxUtils;
-import com.zs.dao.AppDatas;
+import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.auth.LoginActivity;
-import com.zs.ui.home.MainActivity;
+import com.zs.ui.home.MainZSActivity;
+
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 import static com.zs.common.AppUtils.STRING_KEY_false;
@@ -155,8 +156,8 @@ public class WelcomeActivity extends AppBaseActivity {
             // 权限不足
             boolean isPermissionGranted = checkPermission1();
             // 自动登录
-            String account = AppDatas.Auth().getUserLoginName();
-            String password = AppDatas.Auth().getPassword();
+            String account = AppAuth.get().getUserLoginName();
+            String password = AppAuth.get().getPassword();
 
             if (TextUtils.isEmpty(account)
                     || TextUtils.isEmpty(password)
@@ -169,7 +170,7 @@ public class WelcomeActivity extends AppBaseActivity {
                         new RxUtils().doDelayOn(1000, new RxUtils.IMainDelay() {
                             @Override
                             public void onMainDelay() {
-                                startActivity(new Intent(getSelf(), MainActivity.class));
+                                startActivity(new Intent(getSelf(), MainZSActivity.class));
                                 finish();
 //                                LoginActivity.encryptInit();
                             }

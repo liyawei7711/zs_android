@@ -16,7 +16,6 @@ import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.route.BindExtra;
 
 import com.zs.R;
-import com.zs.bus.MeetInvistor;
 import com.zs.bus.TalkInvistor;
 import com.zs.common.AlarmMediaPlayer;
 import com.zs.common.AppBaseActivity;
@@ -24,8 +23,6 @@ import com.zs.common.AppUtils;
 import com.zs.dao.msgs.CaptureMessage;
 import com.zs.models.auth.KickOutHandler;
 import com.zs.models.auth.KickOutUIObserver;
-import com.zs.models.p2p.SdpMsgCommonUDPMsgWrap;
-import com.zs.models.p2p.SdpMsgFindLanCaptureDeviceRspWrap;
 import com.zs.ui.home.view.TalkVideoViewLayout;
 
 /**
@@ -55,10 +52,6 @@ public class TalkVideoActivity extends AppBaseActivity {
     public int nTalkbackID;
     @BindExtra
     public String strExtParam;
-    @BindExtra
-    public SdpMsgFindLanCaptureDeviceRspWrap deviceWrap;
-    @BindExtra
-    public SdpMsgCommonUDPMsgWrap msgWrap;
 
     SdpMsgFindLanCaptureDeviceRsp device;
     SdpMsgCommonUDPMsg msg;
@@ -77,9 +70,6 @@ public class TalkVideoActivity extends AppBaseActivity {
         intent.putExtra("strToUserID", strToUserID);
         intent.putExtra("strToUserName", strToUserName);
         intent.putExtra("strExtParam", strExtParam);
-        if (device != null) {
-            intent.putExtra("deviceWrap", new SdpMsgFindLanCaptureDeviceRspWrap(device));
-        }
         context.startActivity(intent);
         activityShow = true;
     }
@@ -89,9 +79,6 @@ public class TalkVideoActivity extends AppBaseActivity {
         intent.putExtra("isCreate", false);
         intent.putExtra("strTalkbackDomainCode", strTalkbackDomainCode);
         intent.putExtra("nTalkbackID", nTalkbackID);
-        if (msg != null) {
-            intent.putExtra("msgWrap", new SdpMsgCommonUDPMsgWrap(msg));
-        }
         context.startActivity(intent);
         activityShow = true;
     }
@@ -105,13 +92,6 @@ public class TalkVideoActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
-        if (deviceWrap != null) {
-            device = deviceWrap.convert();
-        }
-
-        if (msgWrap != null) {
-            msg = msgWrap.convert();
-        }
         mKickoutObserver = new KickOutUIObserver();
         mKickoutObserver.start(new KickOutHandler() {
             @Override
@@ -172,29 +152,6 @@ public class TalkVideoActivity extends AppBaseActivity {
             return;
         }
         AppUtils.getTvvl_view(this).onTalkInvite(this, data.talk, null, data.millis);
-    }
-
-    @Override
-    public void onMeetInvite(MeetInvistor data) {
-
-        if (data == null) {
-            AppUtils.getTvvl_view(this).closeTalkVideo(null);
-            return;
-        }
-
-        if (data.meet == null) {
-            Logger.debug("TalkVideoActivity data.talk  null");
-            AppUtils.getTvvl_view(this).closeIfTalkDisconnect();
-            return;
-        }
-        if (data.meet.nMeetingStatus != 1) {
-            return;
-        }
-
-        if (data.meet.isSelfMeetCreator()) {
-            return;
-        }
-//        AppUtils.getTvvl_view().onMeetInvite(this, data.meet, data.millis);
     }
 
     @Override

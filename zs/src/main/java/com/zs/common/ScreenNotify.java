@@ -17,7 +17,7 @@ import java.util.List;
 
 import com.zs.MCApp;
 import com.zs.R;
-import com.zs.ui.home.MainActivity;
+import com.zs.ui.home.MainZSActivity;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.Context.KEYGUARD_SERVICE;
@@ -108,7 +108,7 @@ public class ScreenNotify {
         }
         NotificationManager notificationManager = (NotificationManager)context.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Intent intent = new Intent(context,MainActivity.class);
+        Intent intent = new Intent(context, MainZSActivity.class);
         PendingIntent pIntent =  PendingIntent.getActivity(context,1,intent,PendingIntent.FLAG_ONE_SHOT,null);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

@@ -62,8 +62,8 @@ public class AboutActivity extends AppBaseActivity {
             public void onSuccess(VersionData versionData) {
                 tv_new_version.setText("最新版本:" + AppUtils.getString(R.string.activity_about_has_new));
                 if (versionData.isNeedToUpdate()) {
-                    tv_size.setText("大小:" + versionData.versionCode);
-                    tv_content.setText("更新内容:" + versionData.message);
+                    tv_size.setText("大小:" + versionData.getData().getNewVersion());
+                    tv_content.setText("更新内容:" + versionData.getData().getAppDesc());
                 } else {
                     tv_size.setText("大小:无需更新");
                     tv_content.setText("更新内容:无需更新");

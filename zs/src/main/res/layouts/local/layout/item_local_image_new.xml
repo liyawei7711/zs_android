@@ -17,7 +17,6 @@
         android:paddingRight="10dp">
 
         <ImageView
-            android:id="@+id/iv_status"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:visibility="gone"
@@ -38,6 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:singleLine="true"
+            android:text="asdasdasdasd"
             android:textColor="@color/white"
             android:textSize="16sp" />
         <TextView
@@ -45,12 +45,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
+            android:text="2222"
             android:textColor="@color/white"
             android:textSize="16sp" />
-        <ProgressBar
-            android:id="@+id/pb_progress"
-            android:layout_width="30dp"
-            android:layout_height="wrap_content"/>
+
+        <FrameLayout
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ProgressBar
+                android:id="@+id/pb_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="30dp"
+                android:layout_height="8dp"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"
+                android:progressDrawable="@drawable/layerlist_progressbar_hengxiang"/>
+
+            <ImageView
+                android:id="@+id/iv_upload"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:singleLine="true"
+                android:src="@drawable/zs_local_upload"
+                android:textSize="16sp" />
+
+        </FrameLayout>
 
     </LinearLayout>
 

@@ -1,7 +1,6 @@
 package com.zs.dao;
 
 import com.zs.common.SP;
-import com.zs.dao.auth.AppAuth;
 
 /**
  * author: admin
@@ -12,130 +11,60 @@ import com.zs.dao.auth.AppAuth;
  */
 
 public class AppConstants {
-    final String DEFAULT_PUBLIC = "58.240.131.58";
-    String strAddress = "124.70.50.244";
-    int nPort = 8000;
-    int nFilePort = 80;
-    String strFileAddress = "124.70.50.244";
+    //服务器登录
+    static String strAddress = "36.152.32.85";
+    static String nPort = "8086";
 
-    String strAddressPublic;
-    int nPortPublic;
-    String strAddressPrivate;
-    int nPortPrivate;
+    static String strSieAddress = "36.154.50.211";
+    static String strSiePort = "9001";
+
+    static String strSiePlayerAddress = "36.154.50.211";
+    static String strSiePlayerSiePort = "554";
 
     protected AppConstants() {
         strAddress = SP.getParam("IP", strAddress).toString();
-        nPort = Integer.parseInt(SP.getParam("Port", nPort).toString());
-
-        strAddressPublic = SP.getParam("IP_PUBLIC", DEFAULT_PUBLIC).toString();
-        nPortPublic = Integer.parseInt(SP.getParam("Port_PUBLIC", nPort).toString());
-
-        strAddressPrivate = SP.getParam("IP_PRIVATE", strAddress).toString();
-        nPortPrivate = Integer.parseInt(SP.getParam("Port_PRIVATE", nPort).toString());
+        nPort = SP.getParam("Port", nPort).toString();
     }
 
-    public String getAddressIP() {
-        return strAddress;
+    public static String getSieAddressIP() {
+        return strSieAddress;
     }
 
-    public int getAddressPort() {
-        return nPort;
+    public static String getSieAddressPort() {
+        return strSiePort;
     }
 
-
-    public String getStrAddressPublic() {
-        return strAddressPublic;
+    public static String getSiePlayerddressIP() {
+        return strSiePlayerAddress;
     }
 
-    public int getnPortPublic() {
-        return nPortPublic;
+    public static String getSiePlayerAddressPort() {
+        return strSiePlayerSiePort;
     }
 
-    public String getStrAddressPrivate() {
-        return strAddressPrivate;
-    }
-
-    public int getnPortPrivate() {
-        return nPortPrivate;
-    }
-
-    public AppConstants setAddress(String ip, int port) {
+    public static void setAddress(String ip, String port) {
         strAddress = ip;
         nPort = port;
 
         SP.setParam("IP", strAddress);
         SP.setParam("Port", nPort);
-
-        return this;
-    }
-
-    public AppConstants setAddressPublic(String ip,int port){
-        strAddressPublic = ip;
-        nPortPublic = port;
-        SP.setParam("IP_PUBLIC", strAddressPublic);
-        SP.setParam("Port_PUBLIC", nPortPublic);
-        return this;
     }
 
 
-    public AppConstants setAddressPrivate(String ip,int port){
-        strAddressPrivate = ip;
-        nPortPrivate = port;
-        SP.setParam("IP_PRIVATE", strAddressPrivate);
-        SP.setParam("Port_PRIVATE", nPortPrivate);
-        return this;
+    public static String getSieAddress() {
+        return "http://" + strSieAddress + ":" + strSiePort + "/";
     }
 
-    public AppConstants setCurrentSelect(boolean isPublic){
-        SP.setParam("currentSelectAddress", isPublic ? 0 : 1);
-        return this;
-    }
-
-
-    public boolean isSelectPublic(){
-        int selected = SP.getInteger("currentSelectAddress",0);
-        if (selected == 0){
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-
-    public String getSieAddress() {
-        return "http://" + AppDatas.Constants().getAddressIP() + ":" + AppAuth.get().getSieHttpPort() + "/sie/httpjson/";
-    }
-
-    public String getAddressBaseURL() {
+    public static String getAddressBaseURL() {
         return "http://" + strAddress + ":" + nPort + "/";
     }
 
-    public String getFileAddressURL() {
-        return "http://" + strFileAddress + ":" + nFilePort + "/";
-    }
-
-    public String getFileVoidAddressURL() {
-        return "http://" + strFileAddress + ":" + nFilePort;
-    }
-
-
     public String getAddressWithoutPort() {
         return "http://" + strAddress;
-    }
-
-    public String getAddressBaseURL9200() {
-        return "http://" + strAddress + ":9200/";
     }
 
     public String getAddressBaseURLTarget() {
         return "http://" + strAddress + ":" + nPort + "/ECSFileServer/";
     }
 
-    public void setFilePort(int nAppUpdatePort) {
-        nFilePort = nAppUpdatePort;
-    }
-
-    public void setFileAddress(String strFileAddress) {
-        this.strFileAddress = strFileAddress;
-    }
 }

@@ -4,7 +4,8 @@ import android.content.Context;
 
 import java.io.File;
 
-import com.zs.dao.AppDatas;
+import com.zs.dao.AppConstants;
+import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.bean.Upload;
 import ttyy.com.jinnetwork.Https;
@@ -30,12 +31,12 @@ public class DownloadApi {
     }
 
     private DownloadApi() {
-        URL = AppDatas.Constants().getAddressBaseURL() + "download/load.action";
+        URL = AppConstants.getAddressBaseURL() + "download/load.action";
     }
 
     public void download(final Context context, String downLoadUrl) {
         Https.get(downLoadUrl)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .setDownloadMode(new File(context.getExternalCacheDir().getPath(), "newapk.apk"))
                 .setHttpCallback(new HTTPCallback() {
                     @Override
@@ -68,9 +69,9 @@ public class DownloadApi {
     }
 
     public void upload(final ModelCallback<Upload> callback, File file) {
-        String URL = AppDatas.Constants().getFileAddressURL() + "upload_file_lua";
+        String URL = AppConstants.getAddressBaseURL() + "upload_file_lua";
         Https.post(URL, PostContentType.MultipartFormdata)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .addParam("file1", file)
                 .setHttpCallback(new ModelCallback<Upload>() {
                     @Override
@@ -90,9 +91,9 @@ public class DownloadApi {
     }
 
     public void uploadNew(final ModelCallback<Upload> callback, File file) {
-        String URL = AppDatas.Constants().getFileAddressURL() + "upload_file_lua";
+        String URL = AppConstants.getAddressBaseURL() + "upload_file_lua";
         Https.post(URL, PostContentType.MultipartFormdata)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+                .addHeader("X-Token", AppAuth.get().getToken())
                 .addParam("file1", file)
                 .setHttpCallback(new ModelCallback<Upload>() {
                     @Override

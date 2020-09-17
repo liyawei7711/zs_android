@@ -7,7 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -128,6 +130,10 @@ public class LiteBaseAdapter<T> extends RecyclerView.Adapter<LiteViewHolder> {
 
     public int getLitmit() {
         return datas == null ? 0 : datas.size();
+    }
+
+    public List<T> getDatas() {
+        return datas;
     }
 
     @Override

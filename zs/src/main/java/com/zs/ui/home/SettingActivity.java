@@ -19,14 +19,11 @@ import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
-import com.zs.dao.AppDatas;
-import com.zs.dao.msgs.ChatMessages;
 import com.zs.dao.msgs.VssMessageListMessages;
 import com.zs.models.ModelApis;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.bean.VersionData;
 import com.zs.ui.auth.ChangePwdActivity;
-import com.zs.ui.encrypt.EncryptSettingActivity;
 
 import static com.zs.common.AppUtils.CAPTURE_TYPE;
 import static com.zs.common.AppUtils.STRING_KEY_false;
@@ -132,7 +129,7 @@ public class SettingActivity extends AppBaseActivity {
     public void doInitDelay() {
 //        Images.get()
 //                .useCache(ImageCacheType.NoneCache)
-//                .source(AppDatas.Constants().getAddressBaseURL() + "busidataexchange/getQRCode.action?name=ANDROID_APP")
+//                .source(AppConstants.getAddressBaseURL() + "busidataexchange/getQRCode.action?name=ANDROID_APP")
 //                .into(iv_img);
 
     }
@@ -159,9 +156,6 @@ public class SettingActivity extends AppBaseActivity {
                 mLogicDialog.setConfirmClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppDatas.Messages().clear();
-                        VssMessageListMessages.get().clear();
-                        ChatMessages.get().clear();
                         //删除缓存文件夹
                         File fC = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + BuildConfig.APPLICATION_ID + "/files/chat/");
                         if (fC.exists())
@@ -196,7 +190,6 @@ public class SettingActivity extends AppBaseActivity {
                 startActivity(new Intent(this, MapSettingActivity.class));
                 break;
             case R.id.rl_encrypt_setting:
-                startActivity(new Intent(this, EncryptSettingActivity.class));
                 break;
         }
     }

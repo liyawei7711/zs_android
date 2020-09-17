@@ -14,12 +14,16 @@ import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
 import com.zs.dao.MediaFileDaoUtils;
+import com.zs.models.ModelCallback;
+import com.zs.models.auth.AuthApi;
+import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.local.holder.ImageHolder;
-import com.zs.ui.local.holder.VideoHolder;
 
-import java.io.File;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -32,8 +36,8 @@ import java.util.List;
  */
 public class MediaLocalImageFragment extends MediaLocalBaseFragment {
     RecyclerView rcv_list;
-    LiteBaseAdapter<File> adapter;
-    List<File> datas = new ArrayList();
+    LiteBaseAdapter<FileUpload> adapter;
+    List<FileUpload> datas = new ArrayList();
 
     @Nullable
     @Override
@@ -42,12 +46,33 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(FileUpload bean) {
+        if (bean.isImg) {
+            bean.file.delete();
+            int i = datas.indexOf(bean);
+            if(bean.isUpload == 3) {
+                datas.remove(i);
+                adapter.notifyItemRemoved(i);
+            } else {
+                adapter.notifyItemChanged(i);
+            }
+        }
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        EventBus.getDefault().register(this);
         super.onViewCreated(view, savedInstanceState);
         rcv_list = (RecyclerView) view.findViewById(R.id.rcv_list);
         rcv_list.setLayoutManager(new SafeLinearLayoutManager(getContext()));
 
-        datas.addAll(Arrays.asList(MediaFileDaoUtils.get().getAllImgs()));
+        datas.addAll(MediaFileDaoUtils.get().getAllImgs());
         adapter = new LiteBaseAdapter<>(getContext(),
                 datas,
                 ImageHolder.class,
@@ -55,19 +80,18 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        MediaFileDao.MediaFile module = (MediaFileDao.MediaFile) v.getTag();
-//                        if (adapter.getMode() == TagsAdapter.Mode.MultiChoice) {
-//                            if (adapter.getSelectedPositions().size() > 0
-//                                    && adapter.getSelectedPositions().size() == adapter.getItemCount()) {
-//                                parent.setChooseAll(true);
-//                            } else {
-//                                parent.setChooseAll(false);
-//                            }
-//                        } else {
-                        Intent intent = new Intent(getActivity(), MediaLocalVideoPlayActivity.class);
-//                        intent.putExtra("path", module.getRecordPath());
-                        startActivity(intent);
-//                        }
+                        FileUpload bean = (FileUpload) v.getTag();
+                        if (v.getId() == R.id.iv_upload) {
+                            AuthApi.get().upload(adapter, bean, new ModelCallback<String>() {
+                                @Override
+                                public void onSuccess(String upload) {
+                                }
+                            });
+                        } else {
+                            Intent intent = new Intent(getActivity(), ImageShowActivity.class);
+                            intent.putExtra("imageUrl", bean.file.getAbsolutePath());
+                            getActivity().startActivity(intent);
+                        }
                     }
                 }, "");
         rcv_list.setAdapter(adapter);
@@ -90,16 +114,13 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
 
     @Override
     public void chooseAll() {
-        for (File tmp : datas) {
-//            tmp.isSelected = true;
-        }
-        adapter.notifyDataSetChanged();
+
     }
 
     @Override
     public boolean isAllChoosed() {
         int totalSize = 0;
-        for (File tmp : datas) {
+        for (FileUpload tmp : datas) {
 //            if (tmp.isSelected) {
 //                totalSize++;
 //            }
@@ -109,13 +130,6 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
 
     @Override
     public void deleteChoosed() {
-        ArrayList<File> temps = new ArrayList<>();
-        for (File module : datas) {
-//            if (!module.isSelected) {
-//                temps.add(module);
-//            }
-        }
-        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -140,4 +154,16 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
         parent = parentIntf;
     }
 
+    public void upLoadAll() {
+        for (FileUpload tmp : datas) {
+            if (tmp.isUpload == 0 ||
+                    tmp.isUpload == 2) {
+                AuthApi.get().upload(adapter, tmp, new ModelCallback<String>() {
+                    @Override
+                    public void onSuccess(String upload) {
+                    }
+                });
+            }
+        }
+    }
 }

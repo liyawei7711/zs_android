@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-        <files-path
-            name="hy_vss_update.apk"
-            path="/" />
-        <external-path
-            name="hy_vss_update.apk"
-            path="/" />
-        <external-path
-            name="external_storage_root"
-            path="." />
-        <root-path
-            name="root"
-            path="/data"/>
+    <!--        <files-path-->
+    <!--            name="hy_vss_update.apk"-->
+    <!--            path="/" />-->
+    <!--        <external-path-->
+    <!--            name="hy_vss_update.apk"-->
+    <!--            path="/" />-->
+    <!--        <external-path-->
+    <!--            name="external_storage_root"-->
+    <!--            path="." />-->
+    <!--        <root-path-->
+    <!--            name="root"-->
+    <!--            path="/data"/>-->
+    <external-path
+        name="data"
+        path="." />
 </paths>

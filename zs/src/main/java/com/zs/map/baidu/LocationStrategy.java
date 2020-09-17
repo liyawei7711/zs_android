@@ -1,5 +1,7 @@
 package com.zs.map.baidu;
 
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 
 import com.baidu.location.BDAbstractLocationListener;
@@ -18,12 +20,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.zs.BuildConfig;
 import com.zs.MCApp;
-import com.zs.dao.AppDatas;
-import com.zs.models.ModelCallback;
-import com.zs.models.map.MapApi;
+import com.zs.dao.auth.AppAuth;
+import com.zs.models.auth.AuthApi;
 import com.zs.models.map.bean.GPSMapBean;
 import com.zs.ui.auth.LoginActivity;
-import com.zs.ui.auth.SettingAddressActivity;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
@@ -50,7 +50,7 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
      * @return
      */
     public BDLocation getLastUploadLocations() {
-        String id = AppDatas.Auth().getUserID();
+        String id = AppAuth.get().getUserLoginName();
         BDLocation bdLocation = lastUploadLocations.get(id);
         return bdLocation;
     }
@@ -67,7 +67,7 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
         if (location == null) {
             return;
         }
-//        lastUploadLocations.put(AppDatas.Auth().getUserID(), location);
+//        lastUploadLocations.put(AppAuth.get().getUserID(), location);
     }
 
 
@@ -138,16 +138,9 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
         gpsMapBean.nSignalGrades = GPSLocation.get().getIndex();
         gpsMapBean.nDataSourceType = 0;
 
-        if (MCApp.getInstance().getTopActivity() instanceof LoginActivity ||
-                MCApp.getInstance().getTopActivity() instanceof SettingAddressActivity) {
+        if (MCApp.getInstance().getTopActivity() instanceof LoginActivity) {
 
         } else {
-            MapApi.get().pushGps(gpsMapBean, new ModelCallback<Object>() {
-                @Override
-                public void onSuccess(Object o) {
-
-                }
-            });
         }
     }
 
@@ -192,6 +185,7 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onReceiveLocation(BDLocation bdLocation) {
         //bdLocation.getLocType()注意返回值
@@ -207,6 +201,9 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
         }
 
         //返回的定位信息是错的
+        AuthApi.get().pushGPS(MCApp.getInstance(), bdLocation);
+        //发送到界面
+        EventBus.getDefault().post(bdLocation);
         if (bdLocation.getLatitude() == 0 || bdLocation.getLongitude() == 0
                 || bdLocation.getLatitude() == 4.9e-324 || bdLocation.getLongitude() == 4.9e-324) {
             if (BuildConfig.DEBUG)
@@ -233,8 +230,6 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
         if (needSleep){
             sleepLocation(getSleepTime());
         }
-        //发送到界面
-        EventBus.getDefault().post(bdLocation);
 
         BDLocation lastCity = getLastUploadLocations();
         if (lastCity == null) {

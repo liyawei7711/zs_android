@@ -2,11 +2,14 @@ package com.zs.ui.Capture;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.baidu.location.BDLocation;
 import com.huaiye.cmf.sdp.SdpMessageCmStartSessionRsp;
 import com.huaiye.sdk.sdpmsgs.social.SendUserBean;
 import com.ttyy.commonanno.anno.BindLayout;
@@ -18,7 +21,12 @@ import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
 import com.zs.dao.msgs.CaptureMessage;
 import com.zs.dao.msgs.StopCaptureMessage;
+import com.zs.models.auth.AuthApi;
 import com.zs.ui.home.view.CaptureViewLayout;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
@@ -29,7 +37,6 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     @BindView(R.id.capture_view)
     CaptureViewLayout captureView;
 
-    CaptureMessage captureMessage;
     StopCaptureMessage stopCaptureMessage;
     ArrayList<SendUserBean> userList = new ArrayList<>();
     private SdpMessageCmStartSessionRsp sessionRsp;
@@ -42,6 +49,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
         MCApp.getInstance().guanMoOrPushActivity = this;
     }
 
@@ -67,19 +75,26 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 
     private void initData() {
         if (null != getIntent() && null != getIntent().getExtras()) {
-            captureMessage = (CaptureMessage) getIntent().getSerializableExtra("captureMessage");
             stopCaptureMessage = (StopCaptureMessage) getIntent().getSerializableExtra("stopCaptureMessage");
             userList = (ArrayList<SendUserBean>) getIntent().getSerializableExtra("userList");
         }
 
-        captureView.startPreviewVideo(captureMessage, false);
+        captureView.startPreviewVideo(false);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_CAPTURE) {
-            captureView.startPreviewVideo(captureMessage, false);
+            captureView.startPreviewVideo(false);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(BDLocation location) {
+        if(captureView != null) {
+            captureView.toggleShuiYin(location);
         }
     }
 
@@ -93,10 +108,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
         super.onDestroy();
         AppUtils.isCaptureLayoutShowing = true;
         MCApp.getInstance().guanMoOrPushActivity = null;
-    }
-
-    public void closeThisFunction() {
-        captureView.stopCapture();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override

@@ -45,7 +45,7 @@
 
         <!-- android:name=".ui.guide.WelcomeActivity" -->
         <activity
-            android:name=".ui.home.MainZSActivity"
+            android:name=".ui.auth.LoginActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,68 +54,21 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".map.baidu.activity.OfflineMapActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".map.baidu.activity.OfflineMapListActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.device.DevicePlayRealActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="landscape" />
-        <activity
-            android:name=".ui.meet.MeetActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="landscape" />
+            android:name=".ui.home.MainZSActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".ui.talk.TalkVideoActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.meet.ChooseFilesActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.meet.ChoosePhotoActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.meet.ChoosePhotoAndScreenActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.chat.ChatActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.chat.ChatListActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.chat.ChatSearchListActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.local.MediaLocalIndexActivity"
+            android:name=".ui.web.WebJSActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.local.MediaLocalVideoPlayActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.meet.MeetPlaybackActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="landscape" />
-        <activity
-            android:name=".ui.meet.MeetDetailActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.auth.LoginActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".ui.auth.SelectOrgActivity"
             android:screenOrientation="portrait"
@@ -154,15 +107,11 @@
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.DeviceActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".ui.home.AboutActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.PhotoAndVideoActivity"
+            android:name=".ui.local.PhotoAndVideoActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
@@ -173,11 +122,7 @@
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.ContactsActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.home.P2PContactsActivity"
+            android:name=".ui.home.ChaKanDevicceActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
@@ -185,26 +130,13 @@
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.local.ImageShowActivity"
+            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.home.KeyCodeSettingActivity"
             android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.home.ContactsChooseActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.home.MessageActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.auth.SettingAddressActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.home.MainActivity"
-            android:configChanges="screenSize|orientation|screenLayout|smallestScreenSize"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".models.download.InstallDialogActivity"
             android:theme="@style/time_dialog" />
@@ -212,13 +144,7 @@
             android:name=".models.download.ErrorDialogActivity"
             android:theme="@android:style/Theme.Dialog" />
         <activity
-            android:name=".ui.channel.ChannelDetailActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".ui.home.MapSettingActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.home.CallRecordActivity"
             android:screenOrientation="portrait" />
 
         <service android:name="com.huaiye.sdk.sdkabi.common.PushService" />
@@ -243,6 +169,11 @@
                 <action android:name="android.intent.action.PTT_3" />
                 <action android:name="com.dfl.s02.pttDown" />
                 <action android:name="com.dfl.s02.pttup" />
+                <action android:name="zzx_action_record" />
+                <action android:name="zzx_action_mic" />
+                <action android:name="zzx_action_capture" />
+                <action android:name="zzx_action_sos" />
+                <action android:name="zzx_action_ppt" />
 
             </intent-filter>
         </receiver>
@@ -254,16 +185,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.zs.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
         <!-- 声明service组件 -->
         <service
@@ -277,22 +198,26 @@
         <!-- za 的地图key dlNuyRt5oV0PXM0b6DRoAec3E5cUxWqr -->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="AcBmBGRvipD5NmwyNkMQn7jwIU6uXviP" /> <!-- http://lbsyun.baidu.com/apiconsole/key -->
+            android:value="9fUPNnTYVW6O24B7mHX3cm3lEwaRdU0n" /> <!-- http://lbsyun.baidu.com/apiconsole/key -->
         <meta-data
             android:name="api_key"
             android:value="z3pgzJxDSXeasbmDFL7asgnd4GsK6Sz3JrgatvopoHfz"/>
         <!-- 2SApsBELro3HsawhxcnjI0fVTchTMdvO -->
-        <!-- BbNFnkDS7jUnQ5MlQ5hixHGvIwDiWy9G -->
-        <activity
-            android:name=".ui.iperf.IperfActivity"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.home.SettingMoreActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ui.encrypt.EncryptSettingActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ui.encrypt.EncryptChangePwdActivity"
-            android:screenOrientation="portrait"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
+
+
     </application>
 
 </manifest>

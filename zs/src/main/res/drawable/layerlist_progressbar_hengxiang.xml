@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- jnidemo 相关 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@android:id/background"
+        android:drawable="@drawable/progress_huise_corners"/>
+    <item android:id="@android:id/progress">
+        <scale
+            android:drawable="@drawable/progress_green_corners"
+            android:scaleWidth="100%" />
+    </item>
+
+</layer-list>

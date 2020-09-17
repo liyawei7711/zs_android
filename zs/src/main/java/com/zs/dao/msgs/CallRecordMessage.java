@@ -14,14 +14,9 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.zs.R;
-import com.zs.bus.CreateMeet;
 import com.zs.bus.CreateTalkAndVideo;
-import com.zs.bus.MeetInvistor;
 import com.zs.bus.TalkInvistor;
 import com.zs.common.AppUtils;
-import com.zs.dao.AppDatas;
-import com.zs.models.InvistorBean;
-import ttyy.com.datasdao.annos.Column;
 
 /**
  * author: admin
@@ -66,33 +61,18 @@ public class CallRecordMessage {
         return isRecord;
     }
 
-    @Column
     int isRecord;
-    @Column
     int nTalkType;
-    @Column
     int nAcceptType;
-    @Column
     public long nMillions;
 
-    @Column
     String strJoinMeetingJson;
-    @Column
     String strJoinTalkJson;
-    @Column
     String strCreateMeetJson;
-    @Column
     String strCreateTalkJson;
 
-    @Column
     int nMsgSessionID;
-    @Column
-    String userId;
-    @Column
-    String domainCode;
-    @Column
     String name;
-    @Column
     String domain;
 
 
@@ -137,8 +117,6 @@ public class CallRecordMessage {
     }
 
     protected CallRecordMessage() {
-        userId = AppDatas.Auth().getUserID();
-        domainCode = AppDatas.Auth().getDomainCode();
         dateSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         timeSdf = new SimpleDateFormat("HH:mm:ss");
     }
@@ -157,21 +135,6 @@ public class CallRecordMessage {
         return data;
     }
 
-    //呼出会议
-    public static CallRecordMessage from(CreateMeet message) {
-        CallRecordMessage data = new CallRecordMessage();
-        data.nTalkType = MEET;
-        data.nAcceptType = CALL_OUT;
-        data.strCreateMeetJson = gson.toJson(message);
-        data.nMillions = System.currentTimeMillis();
-        data.domain = AppDatas.Auth().getUserID() + "";
-        data.name = AppDatas.Auth().getUserName() + "的视频会议";
-        data.isRecord=1;
-
-        return data;
-    }
-
-
     // 呼入音视频
     public static CallRecordMessage from(TalkInvistor talkInvistor) {
         CallRecordMessage data = new CallRecordMessage();
@@ -188,22 +151,6 @@ public class CallRecordMessage {
             data.domain = talkInvistor.talk.strFromUserID;
             data.name = talkInvistor.talk.strFromUserName;
         }
-        data.isRecord=1;
-
-        return data;
-    }
-
-    // 呼入会议
-    public static CallRecordMessage from(MeetInvistor message) {
-        CallRecordMessage data = new CallRecordMessage();
-        message.meet.strInviteUserTokenID = message.meet.strInviteUserTokenID.substring(0, message.meet.strInviteUserTokenID.lastIndexOf("_"));
-        data.nTalkType = MEET;
-        data.nAcceptType = NO_ACCEPT;
-        data.strJoinMeetingJson = gson.toJson(message);
-        data.nMillions = System.currentTimeMillis();
-        data.nMsgSessionID = message.meet.nMsgSessionID;
-        data.name = message.meet.strInviteUserName + "的视频会议";
-        data.domain = message.meet.strInviteUserTokenID;
         data.isRecord=1;
 
         return data;

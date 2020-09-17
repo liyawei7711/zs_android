@@ -72,17 +72,10 @@ android {
             jniLibs.srcDirs = ['src/main/jniLibs']
             res.srcDirs = [
                     'src/main/res',
-                    'src/main/res/layouts/welcome',
                     'src/main/res/layouts/auth',
                     'src/main/res/layouts/home',
-                    'src/main/res/layouts/meet',
                     'src/main/res/layouts/local',
-                    'src/main/res/layouts/about',
-                    'src/main/res/layouts/contacts',
-                    'src/main/res/layouts/device',
-                    'src/main/res/layouts/chat',
-                    'src/main/res/layouts/map',
-                    'src/main/res/layouts/talk'
+                    'src/main/res/layouts/welcome'
             ]
         }
     }
@@ -112,13 +105,10 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
-    implementation(name: 'clothes', ext: 'aar')
-    implementation(name: 'datas', ext: 'aar')
     implementation(name: 'rcts', ext: 'aar')
     implementation(name: 'networks', ext: 'aar')
     implementation(name: 'qrcode', ext: 'aar')
     implementation(name: 'UMP_Android_Sdk', ext: 'aar')
-    implementation(name: 'views', ext: 'aar')
     implementation(name: 'refresh_exts', ext: 'aar')
     implementation 'org.greenrobot:eventbus:3.0.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'

@@ -78,7 +78,6 @@ import com.zs.R;
 import com.zs.common.views.WindowManagerUtils;
 import com.zs.ui.home.view.TalkVideoViewLayout;
 import com.zs.ui.home.view.TalkViewLayout;
-import com.zs.ui.meet.MeetViewLayoutNew;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.view.KeyEvent.KEYCODE_STEM_2;
@@ -209,6 +208,8 @@ public final class AppUtils {
     public static final String STRING_KEY_soft = "soft";
     public static final String STRING_KEY_kbps = "kbps";
     public static final String STRING_KEY_encrypt = "encrypt";
+    public static final String STRING_KEY_save_photo = "save_photo";
+    public static final String STRING_KEY_save_video = "save_video";
 
     public static int ptt_key;
     public static int sos_key;
@@ -229,22 +230,9 @@ public final class AppUtils {
     static String Temp2 = "MM-dd HH:mm";
     static SimpleDateFormat sdf2 = new SimpleDateFormat(Temp2, Locale.CHINA);
 
-    private static MeetViewLayoutNew meet_view;
     private static TalkVideoViewLayout tvvl_view;
     private static TalkViewLayout tvl_view;
     public static String audiovideoPath = Environment.getExternalStorageDirectory() + "/Android/data/" + BuildConfig.APPLICATION_ID + "/audiovideo";
-
-    public static MeetViewLayoutNew getMeet_view(Context context) {
-        if (meet_view == null) {
-            Logger.log("getMeet_view CREATE");
-            meet_view = new MeetViewLayoutNew(context.getApplicationContext());
-        }
-        return meet_view;
-    }
-
-    public static boolean isMeetViewNull() {
-        return meet_view == null;
-    }
 
     public static boolean isVideoViewNull() {
         return tvvl_view == null;
@@ -278,11 +266,6 @@ public final class AppUtils {
     public static void reSetTalkView() {
         WindowManagerUtils.closeAll(true);
         tvl_view = null;
-    }
-
-    public static void reSetMeetView() {
-        WindowManagerUtils.closeAll(true);
-        meet_view = null;
     }
 
     private AppUtils() {

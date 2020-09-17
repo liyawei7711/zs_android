@@ -59,7 +59,6 @@
             </RadioGroup>
 
             <TextView
-                android:id="@+id/rg_trans_title"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="center_vertical"
@@ -481,7 +480,6 @@
             </RadioGroup>
 
             <TextView
-                android:id="@+id/tv_tvbox_recapture"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="center_vertical"
@@ -525,7 +523,6 @@
             </RadioGroup>
 
             <TextView
-                android:id="@+id/tv_arc_status"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="center_vertical"
@@ -569,7 +566,6 @@
             </RadioGroup>
 
             <TextView
-                android:id="@+id/tv_agc_status"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="center_vertical"
@@ -613,7 +609,6 @@
             </RadioGroup>
 
             <TextView
-                android:id="@+id/tv_ns_status"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:gravity="center_vertical"

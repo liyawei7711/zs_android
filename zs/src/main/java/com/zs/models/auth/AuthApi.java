@@ -6,7 +6,6 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.RequiresApi;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -14,15 +13,10 @@ import com.baidu.location.BDLocation;
 import com.google.gson.Gson;
 import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
-import com.huaiye.sdk.logger.Logger;
 import com.huaiye.sdk.sdkabi._api.ApiAuth;
-import com.huaiye.sdk.sdkabi._api.ApiSocial;
-import com.huaiye.sdk.sdkabi._options.OptionsUser;
 import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
 import com.huaiye.sdk.sdpmsgs.auth.CUploadLogInfoRsp;
 import com.huaiye.sdk.sdpmsgs.auth.CUserRegisterRsp;
-import com.huaiye.sdk.sdpmsgs.social.CQueryUserListReq;
-import com.huaiye.sdk.sdpmsgs.social.CQueryUserListRsp;
 import com.zs.BuildConfig;
 import com.zs.MCApp;
 import com.zs.R;
@@ -31,28 +25,42 @@ import com.zs.common.AppUtils;
 import com.zs.common.ErrorMsg;
 import com.zs.common.SP;
 import com.zs.common.dialog.LogicDialog;
-import com.zs.dao.AppDatas;
+import com.zs.common.recycle.LiteBaseAdapter;
+import com.zs.common.rx.RxUtils;
+import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
 import com.zs.models.ConfigResult;
 import com.zs.models.ModelCallback;
 import com.zs.models.ModelSDKErrorResp;
 import com.zs.models.auth.bean.AuthUser;
-import com.zs.models.auth.bean.ChangePwd;
+import com.zs.models.auth.bean.DeviceTrailBean;
 import com.zs.models.auth.bean.Upload;
 import com.zs.models.auth.bean.VersionData;
-import com.zs.models.contacts.bean.PersonBean;
-import com.zs.models.contacts.bean.PersonModelBean;
 import com.zs.models.download.DownloadApi;
 import com.zs.models.download.DownloadService;
 import com.zs.models.download.ErrorDialogActivity;
-import com.zs.models.map.MapApi;
+import com.zs.ui.local.bean.FileUpload;
+import com.zs.ui.local.bean.UploadModelBean;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 import ttyy.com.jinnetwork.Https;
 import ttyy.com.jinnetwork.core.callback.HTTPUIThreadCallbackAdapter;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
@@ -61,6 +69,8 @@ import ttyy.com.jinnetwork.core.work.method_post.PostContentType;
 
 import static android.content.Context.BATTERY_SERVICE;
 import static com.zs.common.AppUtils.STRING_KEY_needload;
+import static com.zs.common.AppUtils.STRING_KEY_save_photo;
+import static com.zs.common.AppUtils.STRING_KEY_save_video;
 import static com.zs.common.ErrorMsg.login_empty_code;
 import static com.zs.common.ErrorMsg.login_err_code;
 
@@ -75,7 +85,7 @@ import static com.zs.common.ErrorMsg.login_err_code;
 public class AuthApi {
 
     String URL;
-    File tag = new File(Environment.getExternalStorageDirectory() + "/" + BuildConfig.APPLICATION_ID + "_" + AppDatas.Auth().getUserName() + "_" + System.currentTimeMillis() + ".zip");
+    File tag = new File(Environment.getExternalStorageDirectory() + "/" + BuildConfig.APPLICATION_ID + "_" + AppAuth.get().getUserLoginName() + "_" + System.currentTimeMillis() + ".zip");
     File tagZip = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + BuildConfig.APPLICATION_ID + "/files");
 
     private AuthApi() {
@@ -86,46 +96,8 @@ public class AuthApi {
     }
 
 
-    public void changpwd(String old, String news, final ModelCallback<ChangePwd> callback) {
-        String URL = AppDatas.Constants().getAddressBaseURL() + "vss/httpjson/mod_user_pwd";
-        Https.post(URL)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
-                .addHeader("Connection", "close")
-                .addParam("strDomainCode", AppDatas.Auth().getDomainCode())
-                .addParam("strUserID", AppDatas.Auth().getUserID() + "")
-                .addParam("strOldPassword", AppUtils.getMd5(old))
-                .addParam("strNewPassword", AppUtils.getMd5(news))
-                .setHttpCallback(new ModelCallback<ChangePwd>() {
-
-                    @Override
-                    public void onPreStart(HTTPRequest request) {
-                        super.onPreStart(request);
-                    }
-
-                    @Override
-                    public void onSuccess(ChangePwd response) {
-                        if (callback == null)
-                            return;
-
-                        callback.onSuccess(response);
-
-                    }
-
-                    @Override
-                    public void onFailure(HTTPResponse response) {
-                        super.onFailure(response);
-                        if (callback != null) {
-                            callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_err_code, "HTTP ERROR AuthApi "));
-                        }
-                    }
-                })
-                .build()
-                .requestNowAsync();
-
-    }
-
     public void getServiceConfig(final ModelCallback<ConfigResult> callback) {
-        String URL = AppDatas.Constants().getAddressBaseURL() + "vss/httpjson/get_vss_config_para";
+        String URL = "http://192.168.1.2/vss/httpjson/get_vss_config_para";
         ArrayList<String> params = new ArrayList<>();
         params.add("FILE_SERVICE_IP");
         params.add("FILE_SERVICE_PORT");
@@ -139,10 +111,8 @@ public class AuthApi {
                             for (int i = 0; i < response.getLstVssConfigParaInfo().size(); i++) {
                                 ConfigResult.Info info = response.getLstVssConfigParaInfo().get(i);
                                 if (info.getStrVssConfigParaName().equals("FILE_SERVICE_IP")) {
-                                    AppDatas.Constants().setFileAddress(info.getStrVssConfigParaValue());
                                 }
                                 if (info.getStrVssConfigParaName().equals("FILE_SERVICE_PORT")) {
-                                    AppDatas.Constants().setFilePort(Integer.parseInt(info.getStrVssConfigParaValue()));
                                 }
                             }
                             callback.onSuccess(response);
@@ -165,10 +135,10 @@ public class AuthApi {
     }
 
     public void logout(Context context, ModelCallback<Object> callback) {
-        URL = "http://36.152.32.85:8086/aj/mediaApk/loginout";
+        URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/loginout";
         Https.post(URL)
-                .addHeader("Authorization", AppDatas.Auth().getToken())
-                .addParam("phone", AppDatas.Auth().getUserLoginName())
+                .addHeader("Authorization", AppAuth.get().getToken())
+                .addParam("phone", AppAuth.get().getUserLoginName())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
                 .setHttpCallback(callback)
                 .build()
@@ -182,12 +152,14 @@ public class AuthApi {
     public void loginHY(final String account, final ModelCallback<AuthUser> callback) {
         HYClient.getModule(ApiAuth.class)
                 .login(SdkParamsCenter.Auth.Login()
-                        .setAddress(AppDatas.Constants().getAddressIP(), 9001)
+                        .setAddress(AppConstants.getSieAddressIP(), Integer.parseInt(AppConstants.getSieAddressPort()))
+                        .setAutoKickout(true)
                         .setUserId(account + "")
                         .setnPriority(999)
                         .setUserName(account), new SdkCallback<CUserRegisterRsp>() {
                     @Override
                     public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
+                        AppAuth.get().put("strTokenHY", cUserRegisterRsp.strUserTokenID);
                         successDeal(callback, null, cUserRegisterRsp);
                     }
 
@@ -199,7 +171,7 @@ public class AuthApi {
     }
 
     public void login(final Context context, final String account, final ModelCallback<AuthUser> callback) {
-        URL = "http://36.152.32.85:8086/aj/mediaApk/login";
+        URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/login";
         Https.get(URL)
                 .addParam("phone", account)
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
@@ -217,10 +189,11 @@ public class AuthApi {
                     public void onSuccess(HTTPResponse response) {
                         super.onSuccess(response);
                         String str = response.getContentToString();
-                        System.out.println("ccccccccccccc "+str);
+                        System.out.println("ccccccccccccc " + str);
                         AuthUser authUser = null;
                         try {
                             authUser = new Gson().fromJson(str, AuthUser.class);
+                            AppAuth.get().setAuthUser(authUser);
                         } catch (Exception e) {
                             if (callback != null) {
                                 callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_empty_code, "HTTP ERROR AuthApi"));
@@ -235,12 +208,13 @@ public class AuthApi {
                         }
                         if (!"0".equals(authUser.code)) {
                             if (callback != null) {
+                                if (BuildConfig.DEBUG) {
+                                    loginHY(account, callback);
+                                }
                                 callback.onFailure(new ModelSDKErrorResp().setErrorMessage(-1, authUser.msg));
                             }
                             return;
                         }
-                        AppDatas.Auth().setAuthUser(authUser);
-                        MapApi.isNewBegin = true;
                         loginHY(account, callback);
                     }
 
@@ -260,14 +234,15 @@ public class AuthApi {
     public void pushGPS(Context context, BDLocation location) {
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
         int battery = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        Https.post("http://36.152.32.85:8086/aj/mediaApk/deviceTrail")
-                .addHeader("Authorization", AppDatas.Auth().getToken())
-                .addParam("accuracy", location.getLatitude())
-                .addParam("dimension", location.getLongitude())
-                .addParam("userId", AppDatas.Auth().getUserID())
-                .addParam("deviceId", AppUtils.getIMEIResult(context))
-                .addParam("time", AppUtils.getTime(System.currentTimeMillis()))
-                .addParam("electricityQuantity", battery + "")
+        DeviceTrailBean mediaDeviceTrailEntity = new DeviceTrailBean();
+        mediaDeviceTrailEntity.accuracy = location.getLatitude() + "";
+        mediaDeviceTrailEntity.dimension = location.getLongitude() + "";
+        mediaDeviceTrailEntity.userId = AppAuth.get().getUserID();
+        mediaDeviceTrailEntity.time = AppUtils.getTime(System.currentTimeMillis());
+        mediaDeviceTrailEntity.electricityQuantity = battery + "";
+        Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceTrail")
+                .addHeader("Authorization", AppAuth.get().getToken())
+                .addParam("mediaDeviceTrailEntity", mediaDeviceTrailEntity)
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
@@ -279,8 +254,8 @@ public class AuthApi {
     }
 
     public void startUnUsDevice(Context context) {
-        Https.get("http://36.152.32.85:8086/aj/mediaApk/deviceOutUse")
-                .addHeader("Authorization", AppDatas.Auth().getToken())
+        Https.get(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceOutUse")
+                .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
@@ -293,14 +268,39 @@ public class AuthApi {
     }
 
     public void startUsDevice(Context context, String caseName) {
-        Https.get("http://36.152.32.85:8086/aj/mediaApk/deviceInUse")
-                .addHeader("Authorization", AppDatas.Auth().getToken())
+        Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceInUse")
+                .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
                 .addParam("caseName", caseName)
+                .addParam("businessId", caseName)
+                .addParam("companyName", caseName)
+                .addParam("nodeCode", caseName)
+                .addParam("nodeName", caseName)
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
 
+                    }
+                })
+                .build()
+                .requestNowAsync();
+    }
+
+    public void changeCapture(Context context, String url, boolean isCapture) {
+        if (isCapture) {
+            startUsDevice(context, "");
+        } else {
+            startUnUsDevice(context);
+        }
+        Https.get(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
+                .addHeader("Authorization", AppAuth.get().getToken())
+                .addParam("userId", AppAuth.get().getUserID())
+                .addParam("deviceId", AppUtils.getIMEIResult(context))
+                .addParam("url", url)
+                .addParam("captureState", isCapture ? 1 : 0)
+                .setHttpCallback(new ModelCallback<String>() {
+                    @Override
+                    public void onSuccess(String s) {
                     }
                 })
                 .build()
@@ -339,7 +339,7 @@ public class AuthApi {
         String strOSDCommand = "drawtext=fontfile="
                 + HYClient.getSdkOptions().Capture().getOSDFontFile()
                 + ":fontcolor=white:x=0:y=0:fontsize=26:box=1:boxcolor=black:alpha=0.8:text=' "
-                + AppDatas.Auth().getUserName()
+                + AppAuth.get().getUserName()
                 + "'";
         // OSD名称初始化
         HYClient.getSdkOptions().Capture().setOSDCustomCommand(strOSDCommand);
@@ -352,9 +352,9 @@ public class AuthApi {
      * @param callback
      */
     public void requestVersion(final Context context, final ModelCallback<VersionData> callback) {
-        String URL = AppDatas.Constants().getFileAddressURL() + "app/android.version";
-        Https.get(URL)
-                .addHeader("X-Token", AppDatas.Auth().getToken())
+        String URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/lastVersionInfo";
+        Https.post(URL)
+                .addHeader("Authorization", AppAuth.get().getToken())
                 .setHttpCallback(new ModelCallback<VersionData>() {
 
                     @Override
@@ -371,7 +371,7 @@ public class AuthApi {
                             final LogicDialog logicDialog = new LogicDialog(context);
                             logicDialog.setCancelable(false);
                             logicDialog.setCanceledOnTouchOutside(false);
-                            logicDialog.setMessageText(versionData.message);
+                            logicDialog.setMessageText(versionData.getData().getAppDesc());
                             logicDialog.setConfirmClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -386,19 +386,19 @@ public class AuthApi {
                                         // wifi
                                         AppUtils.showToast(AppUtils.getString(R.string.download_apk_start));
                                         Intent intent = new Intent(context, DownloadService.class);
-                                        intent.putExtra("downloadURL", AppDatas.Constants().getFileAddressURL() + versionData.path);
+                                        intent.putExtra("downloadURL", versionData.getData().getAppAccessoryBaseBean().getAccessoryDownUrl());
                                         context.startService(intent);
                                     } else if (netStatus == 1) {
                                         // 4G/3G
                                         Intent intent = new Intent(context, ErrorDialogActivity.class);
-                                        intent.putExtra("downloadURL", AppDatas.Constants().getFileAddressURL() + versionData.path);
+                                        intent.putExtra("downloadURL", versionData.getData().getAppAccessoryBaseBean().getAccessoryDownUrl());
                                         context.startActivity(intent);
                                     }
 //                                    logicDialog.setConfirmClickListener(new View.OnClickListener() {
 //                                        @Override
 //                                        public void onClick(View v) {
 //                                            logicDialog.dismiss();
-//                                            ModelApis.Download().download(context, AppDatas.Constants().getFileAddressURL() + versionData.path);
+//                                            ModelApis.Download().download(context, AppConstants.getFileAddressURL() + versionData.path);
 //                                        }
 //                                    }).setCancelClickListener(new View.OnClickListener() {
 //                                        @Override
@@ -438,20 +438,15 @@ public class AuthApi {
         }
     }
 
-    /**
-     * 上传
-     *
-     * @param tag
-     */
     public void upload(final File tag, final boolean isShow) {
-        String URL = "http://36.152.32.85:8086/aj/mediaApk/file";
+        String URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/file";
 //        if (tag.length() > 1028 * 1028 * 50) {
 //            EventBus.getDefault().post(new UploadFile(2));
 //            return;
 //        }
 
         Https.post(URL, PostContentType.MultipartFormdata)
-                .addHeader("Authorization", AppDatas.Auth().getToken())
+                .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("userId", AppAuth.get().getUserID())
                 .addParam("deviceId", AppUtils.getIMEIResult(MCApp.getInstance()))
                 .addParam("accuracy", AppUtils.getIMEIResult(MCApp.getInstance()))
@@ -508,5 +503,141 @@ public class AuthApi {
                 .requestNowAsync();
     }
 
+    /**
+     * 上传
+     *
+     * @param adapter
+     * @param tag
+     */
+    public void upload(final LiteBaseAdapter<FileUpload> adapter, final FileUpload tag, final ModelCallback<String> callback) {
+        UploadModelBean bean = new UploadModelBean(tag);
+
+        OkHttpClient Client = new OkHttpClient();
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("mediaUploadReqDtoJsonStr", new Gson().toJson(bean))
+                .addFormDataPart("file", tag.file.getName(),
+                        createCustomRequestBody(MediaType.parse("multipart/form-data"), new File(tag.file.getAbsolutePath()), new ProgressListener() {
+                            @Override
+                            public void onProgress(final long totalBytes, final long remainingBytes, boolean done) {
+                                tag.remainingBytes = remainingBytes;
+                                tag.totalBytes = totalBytes;
+                                if (remainingBytes == 0) {
+                                    tag.isUpload = 3;
+                                    if (tag.isImg) {
+                                        String saveImg = SP.getString(STRING_KEY_save_photo);
+                                        if (!saveImg.contains(tag.name)) {
+                                            SP.putString(STRING_KEY_save_photo, saveImg + tag.name);
+                                        }
+                                    } else {
+                                        String saveVideo = SP.getString(STRING_KEY_save_video);
+                                        if (!saveVideo.contains(tag.name)) {
+                                            SP.putString(STRING_KEY_save_video, saveVideo + tag.name);
+                                        }
+                                    }
+                                } else {
+                                    tag.isUpload = 1;
+                                }
+                                new RxUtils<>().doOnThreadObMain(new RxUtils.IThreadAndMainDeal() {
+                                    @Override
+                                    public Object doOnThread() {
+                                        return "";
+                                    }
+
+                                    @Override
+                                    public void doOnMain(Object data) {
+                                        adapter.notifyItemChanged(adapter.getDatas().indexOf(tag));
+                                        System.out.println("cccccccccccccccccccccc total : " + totalBytes + ", left:" + remainingBytes + "  ddd  " + adapter.getDatas().indexOf(tag));
+                                    }
+                                });
+                            }
+                        }))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(AppConstants.getAddressBaseURL() + "aj/mediaApk/file")
+                .addHeader("Authorization", AppAuth.get().getToken())
+                .post(requestBody)
+                .build();
+
+        Client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                try {
+                    tag.remainingBytes = 100;
+                    tag.totalBytes = 100;
+                    tag.isUpload = 2;
+                    callback.onFailure(null);
+                } catch (Exception ex) {
+
+                }
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    String strResp = response.body().string();
+                    callback.onSuccess(strResp);
+
+                    tag.remainingBytes = 100;
+                    tag.totalBytes = 100;
+                    tag.isUpload = 3;
+                } catch (Exception e) {
+                    tag.isUpload = 2;
+                    callback.onFailure(null);
+                }
+                new RxUtils<>().doOnThreadObMain(new RxUtils.IThreadAndMainDeal() {
+                    @Override
+                    public Object doOnThread() {
+                        return "";
+                    }
+
+                    @Override
+                    public void doOnMain(Object data) {
+                        adapter.notifyItemChanged(adapter.getDatas().indexOf(tag));
+                    }
+                });
+
+            }
+        });
+    }
+
+    public static RequestBody createCustomRequestBody(final MediaType contentType, final File file, final ProgressListener listener) {
+        return new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return contentType;
+            }
+
+            @Override
+            public long contentLength() {
+                return file.length();
+            }
+
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
+                Source source;
+                try {
+                    source = Okio.source(file);
+                    //sink.writeAll(source);
+                    Buffer buf = new Buffer();
+                    Long remaining = contentLength();
+                    for (long readCount; (readCount = source.read(buf, 2048)) != -1; ) {
+                        sink.write(buf, readCount);
+                        listener.onProgress(contentLength(), remaining -= readCount, remaining == 0);
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+    }
+
+
+    public interface ProgressListener {
+        void onProgress(long totalBytes, long remainingBytes, boolean done);
+    }
 
 }

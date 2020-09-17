@@ -26,8 +26,6 @@ public class BroadCastMsgListHolder extends LiteViewHolder {
 
     @BindView(R.id.iv_close)
     ImageView iv_close;
-    @BindView(R.id.tv_notice_msg_show)
-    TextView tv_notice_msg_show;
 
     public BroadCastMsgListHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
@@ -42,14 +40,10 @@ public class BroadCastMsgListHolder extends LiteViewHolder {
         iv_close.setTag(bean);
         itemView.setTag(bean);
         if (bean.type == AppUtils.ZHILING_IMG_TYPE_INT) {
-            tv_notice_msg_show.setText(bean.fromUserName + ":[" + AppUtils.getString(R.string.img) + "]");
         } else if (bean.type == AppUtils.ZHILING_FILE_TYPE_INT) {
-            tv_notice_msg_show.setText(bean.fromUserName + ":[" + AppUtils.getString(R.string.notice_file) + "]");
         } else if (bean.type == AppUtils.PLAYER_TYPE_PERSON_INT ||
                 bean.type == AppUtils.PLAYER_TYPE_DEVICE_INT) {
-            tv_notice_msg_show.setText(bean.fromUserName + ":[" + AppUtils.getString(R.string.notice_share) + "]");
         } else {
-            tv_notice_msg_show.setText(bean.fromUserName + ":" + bean.content);
         }
     }
 

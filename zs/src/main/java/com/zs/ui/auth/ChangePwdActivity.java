@@ -18,8 +18,6 @@ import com.zs.MCApp;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
-import com.zs.common.ErrorMsg;
-import com.zs.dao.AppDatas;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.ChangePwd;
@@ -181,41 +179,5 @@ public class ChangePwdActivity extends AppBaseActivity {
             return;
         }
         tv_sure.setEnabled(false);
-        AuthApi.get().changpwd(edt_old_pwd.getText().toString(),
-                edt_new_pwd.getText().toString(),
-                new ModelCallback<ChangePwd>() {
-                    @Override
-                    public void onSuccess(ChangePwd authUser) {
-                        if (authUser.nResultCode == 0) {
-                            AppDatas.Auth().put(PWD, "");
-                            showToast(AppUtils.getString(R.string.pwd_has_changed));
-
-                            Logger.log("修改密码退出");
-
-                            ((MCApp) ctx).gotoLogin(false);
-
-                        } else {
-                            if(authUser.nResultCode == 1010100003) {
-                                showToast(AppUtils.getString(R.string.no_this_user));
-                            } else if(authUser.nResultCode == 1010100005) {
-                                showToast(AppUtils.getString(R.string.old_pwd_error));
-                            } else if(authUser.nResultCode == 1010100016) {
-                                showToast(AppUtils.getString(R.string.change_error));
-                            } else {
-                                showToast(AppUtils.getString(R.string.change_error));
-                            }
-
-                            tv_sure.setEnabled(true);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(HTTPResponse httpResponse) {
-                        super.onFailure(httpResponse);
-                        tv_sure.setEnabled(true);
-                        showToast(AppUtils.getString(R.string.req_false));
-                    }
-                });
-
     }
 }

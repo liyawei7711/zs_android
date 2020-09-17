@@ -89,7 +89,7 @@ public class ZSSettingActivity extends AppBaseActivity {
                 startActivity(new Intent(this, LiangDuActivity.class));
                 break;
             case R.id.tv_device:
-                startActivity(new Intent(this, DeviceActivity.class));
+                startActivity(new Intent(this, ChaKanDevicceActivity.class));
                 break;
         }
     }

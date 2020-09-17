@@ -15,7 +15,6 @@ import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
 import com.zs.models.auth.AuthApi;
-import com.zs.ui.iperf.IperfActivity;
 
 @BindLayout(R.layout.activity_setting_more)
 public class SettingMoreActivity extends AppBaseActivity {
@@ -55,7 +54,6 @@ public class SettingMoreActivity extends AppBaseActivity {
                 });
                 break;
             case R.id.view_bandwidth:
-                startActivity(new Intent(getSelf(),IperfActivity.class));
                 break;
         }
     }

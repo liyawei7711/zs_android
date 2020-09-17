@@ -42,13 +42,21 @@ public class AppAuth {
 
         // 缓存
         put("strUserID", user.getUserEntity().getId());
-//        put("strUserName", user.strUserName);
+        put("strUserName", user.getUserEntity().getUsername());
         put("loginName", user.getUserEntity().getMobile());
 //        put("strDomainCode", user.strDomainCode);
 //        put("nPriority", user.nPriority);
 //
-//        put("strSieIP", user.strSieIP);
-//        put("nSiePort", user.nSiePort);
+        if(user.getServer() != null) {
+            put("strSieIP", user.getServer().getMediaUrl());
+            put("nSiePort", user.getServer().getMediaPort());
+
+            put("strSiePlayIP", user.getServer().getRtspUrl());
+            put("nSiePlayPort", user.getServer().getRtspPort());
+
+            put("web_h5", user.getServer().getMediaWebUrl());
+
+        }
         put("strToken", user.getData());
 //        put(SIE_HTTP_PORT, user.nSieHttpPort);
     }
@@ -63,6 +71,12 @@ public class AppAuth {
 
     public String getToken() {
         return get("strToken");
+    }
+    public String getTokenHY() {
+        return get("strTokenHY");
+    }
+    public String getH5Web() {
+        return get("web_h5");
     }
 
     public void put(String key, Object code) {

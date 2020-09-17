@@ -76,17 +76,18 @@ public class MediaLocalVideoPlayActivity extends AppBaseActivity {
                     @Override
                     public void onVideoStatusChanged(VideoParams param, SdpMessageBase msg) {
                         super.onVideoStatusChanged(param, msg);
-                        SdkMsgNotifyPlayStatus status = (SdkMsgNotifyPlayStatus) msg;
-                        if (status.isStopped()
-                                && !isFinishing()) {
+                        if(msg instanceof SdkMsgNotifyPlayStatus) {
+                            SdkMsgNotifyPlayStatus status = (SdkMsgNotifyPlayStatus) msg;
+                            if (status.isStopped()
+                                    && !isFinishing()) {
 
-                            if (!status.isOperationFromUser()) {
-                                showToast(AppUtils.getString(R.string.player_complete));
-                                finish();
+                                if (!status.isOperationFromUser()) {
+                                    showToast(AppUtils.getString(R.string.player_complete));
+                                    finish();
+                                }
+
                             }
-
                         }
-
                     }
 
                     @Override
