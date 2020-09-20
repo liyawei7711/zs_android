@@ -5,12 +5,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.ttyy.commonanno.Finder;
+import com.ttyy.commonanno.Injectors;
+import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
 import com.zs.common.recycle.LiteViewHolder;
 
 import java.util.List;
-
-import butterknife.BindView;
 
 /**
  * author: admin
@@ -21,8 +22,6 @@ import butterknife.BindView;
  */
 
 public class OrgHolder extends LiteViewHolder {
-
-
     @BindView(R.id.ll_root)
     LinearLayout ll_root;
     @BindView(R.id.tv_name)
@@ -30,6 +29,8 @@ public class OrgHolder extends LiteViewHolder {
 
     public OrgHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        ll_root = view.findViewById(R.id.ll_root);
+        tv_name = view.findViewById(R.id.tv_name);
         itemView.setOnClickListener(ocl);
     }
 

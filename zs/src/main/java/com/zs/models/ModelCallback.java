@@ -54,12 +54,11 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
     public void onPreStart(HTTPRequest httpRequest) {
         if (!AppUtils.isNetworkConnected()) {
             httpRequest.cancel();
-            AppUtils.showToast(AppUtils.getString(R.string.no_net));
             return;
         }
-        Log.i("MCApp", "url -> " + httpRequest.getRequestURL());
-        Log.i("MCApp", "params -> " + gson.toJson(httpRequest.getParams()));
-        Log.i("MCApp", "header -> " + gson.toJson(httpRequest.getHeaders()));
+        Log.i("MCApp", "resp url -> " + httpRequest.getRequestURL());
+        Log.i("MCApp", "resp params -> " + gson.toJson(httpRequest.getParams()));
+        Log.i("MCApp", "resp header -> " + gson.toJson(httpRequest.getHeaders()));
     }
 
     @Override
@@ -70,7 +69,6 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
     @Override
     public final void onSuccess(HTTPResponse httpResponse) {
         String str = httpResponse.getContentToString();
-        Log.i("MCApp", "resp url -> " + httpResponse.getHttpRequest().getRequestURL());
         Log.i("MCApp", "resp -> " + str);
 
 //        if (response.code == 3) {

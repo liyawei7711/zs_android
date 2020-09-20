@@ -1,6 +1,9 @@
 package com.zs.dao;
 
+import android.text.TextUtils;
+
 import com.huaiye.sdk.HYClient;
+import com.zs.MCApp;
 import com.zs.R;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
@@ -51,11 +54,31 @@ public class MediaFileDaoUtils {
     }
 
     public ArrayList<FileUpload> getAllVideos() {
+        String currentFileName = "";
+        if (MCApp.getInstance().guanMoOrPushActivity != null) {
+            try {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaFile.getRecordPath();
+                if(!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                    currentFileName = "";
+                }
+            } catch (Exception e) {
+            }
+        }
         ArrayList<FileUpload> datas = new ArrayList<>();
         String saveVideo = SP.getString(STRING_KEY_save_video);
         StringBuilder sb = new StringBuilder();
         for (File temp : mVideoDir.listFiles()) {
-            datas.add(new FileUpload(temp.getName(), temp));
+            FileUpload fileUpload = new FileUpload(temp.getName(), temp);
+            if (fileUpload.isUpload == 3) {
+                fileUpload.file.delete();
+                break;
+            }
+            if (!TextUtils.isEmpty(currentFileName)) {
+                if (temp.getName().equals(new File(currentFileName).getName())) {
+                    break;
+                }
+            }
+            datas.add(fileUpload);
             if (saveVideo.contains(temp.getName())) {
                 sb.append(temp.getName());
             }
@@ -65,11 +88,31 @@ public class MediaFileDaoUtils {
     }
 
     public ArrayList<FileUpload> getAllImgs() {
+        String currentFileName = "";
+        if (MCApp.getInstance().guanMoOrPushActivity != null) {
+            try {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaFile.getRecordPath();
+                if(!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                    currentFileName = "";
+                }
+            } catch (Exception e) {
+            }
+        }
         ArrayList<FileUpload> datas = new ArrayList<>();
         String saveImg = SP.getString(STRING_KEY_save_photo);
         StringBuilder sb = new StringBuilder();
         for (File temp : mImageDir.listFiles()) {
-            datas.add(new FileUpload(temp.getName(), temp));
+            FileUpload fileUpload = new FileUpload(temp.getName(), temp);
+            if (fileUpload.isUpload == 3) {
+                fileUpload.file.delete();
+                break;
+            }
+            if (!TextUtils.isEmpty(currentFileName)) {
+                if (temp.getName().equals(new File(currentFileName).getName())) {
+                    break;
+                }
+            }
+            datas.add(fileUpload);
             if (saveImg.contains(temp.getName())) {
                 sb.append(temp.getName());
             }
@@ -86,6 +129,7 @@ public class MediaFileDaoUtils {
             temp.delete();
         }
     }
+
     public MediaFile getVideoRecordFile() {
         MediaFile data = new MediaFile();
         data.nMediaType = 1;
@@ -136,8 +180,8 @@ public class MediaFileDaoUtils {
                 // 视频
                 // yyyy-MM-dd_HH:mm:ss_android_video.dat
 //                fileName.append("_video.dat");
-                fileName.append(".dat");
-//                fileName.append("_video.mp4");
+//                fileName.append(".dat");
+                fileName.append(".mp4");
             }
             return fileName.toString();
         }

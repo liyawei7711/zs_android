@@ -1,7 +1,7 @@
 package com.zs.ui.home;
 
 import android.os.Build;
-import android.support.annotation.IdRes;
+import androidx.annotation.IdRes;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RadioGroup;

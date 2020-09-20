@@ -17,7 +17,7 @@ public class PttButtonReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         System.out.println("PttButtonReceiver action " +intent.getAction());
-        if (!AppUtils.isHide){
+        if (AppUtils.isHide){
             Logger.log("PttButtonReceiver app is hide " + AppUtils.isHide);
             return;
         }

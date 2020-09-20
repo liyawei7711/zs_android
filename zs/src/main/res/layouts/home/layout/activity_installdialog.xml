@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/radius_white_solid"
+    android:background="@drawable/shape_dialog_logic_back"
     android:orientation="vertical">
 
     <TextView
@@ -15,9 +15,8 @@
         android:paddingRight="15dp"
         android:paddingTop="15dp"
         android:text="@string/find_new_version"
-        android:textColor="#323232"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textColor="@color/white"
+        android:textSize="16sp"/>
 
     <TextView
         android:id="@+id/tv_errinfo"
@@ -26,13 +25,13 @@
         android:gravity="center_vertical"
         android:padding="15dp"
         android:text="@string/new_version_has_complete"
-        android:textColor="#323232"
+        android:textColor="@color/white"
         tools:ignore="HardcodedText" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:background="@color/black666" />
+        android:background="@color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,14 +46,14 @@
             android:background="@drawable/selector_errinfo"
             android:gravity="center"
             android:text="@string/cancel"
-            android:textColor="#323232" />
+            android:textColor="@color/red" />
 
         <View
             android:layout_width="1px"
             android:layout_height="match_parent"
             android:layout_marginBottom="6dp"
             android:layout_marginTop="6dp"
-            android:background="@color/black666" />
+            android:background="@color/white" />
 
         <TextView
             android:id="@+id/tv_confirm"

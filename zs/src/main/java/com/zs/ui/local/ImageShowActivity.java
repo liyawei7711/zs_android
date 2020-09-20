@@ -1,11 +1,8 @@
 package com.zs.ui.local;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+import androidx.annotation.Nullable;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -22,8 +19,6 @@ import com.ttyy.commonanno.anno.route.BindExtra;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 
-import java.io.File;
-import java.util.ArrayList;
 
 /**
  * author: zhangzhen

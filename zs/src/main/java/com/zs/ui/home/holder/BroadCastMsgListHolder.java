@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import butterknife.BindView;
+import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
 import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteViewHolder;
@@ -29,6 +29,7 @@ public class BroadCastMsgListHolder extends LiteViewHolder {
 
     public BroadCastMsgListHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        iv_close = view.findViewById(R.id.iv_close);
         iv_close.setOnClickListener(ocl);
         itemView.setOnClickListener(ocl);
     }

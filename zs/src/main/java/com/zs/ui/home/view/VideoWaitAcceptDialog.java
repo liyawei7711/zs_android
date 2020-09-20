@@ -2,9 +2,10 @@ package com.zs.ui.home.view;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -34,10 +35,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.Unbinder;
+import com.ttyy.commonanno.Finder;
+import com.ttyy.commonanno.Injectors;
+import com.ttyy.commonanno.anno.BindView;
+import com.ttyy.commonanno.anno.OnClick;
 import com.zs.R;
 import com.zs.bus.AcceptDiaoDu;
 import com.zs.bus.WaitViewAllFinish;
@@ -65,7 +66,6 @@ public class VideoWaitAcceptDialog extends DialogFragment {
     ImageView iv_refuse;
     @BindView(R.id.iv_accept)
     ImageView iv_accept;
-    Unbinder unbinder;
     DialogInterface.OnDismissListener onDismissListener;
     DialogInterface.OnShowListener    onShowListener;
 //    AppAudioManagerWrapper appAudioManagerWrapper;
@@ -92,7 +92,7 @@ public class VideoWaitAcceptDialog extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.video_wait_accept_dialog, container, false);
-        unbinder = ButterKnife.bind(this, view);
+        Injectors.get().inject(Finder.View, view, this);
         EventBus.getDefault().register(this);
         return view;
     }
@@ -197,9 +197,6 @@ public class VideoWaitAcceptDialog extends DialogFragment {
 //        }
         EventBus.getDefault().unregister(this);
         (getActivity()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        if (unbinder != null) {
-            unbinder.unbind();
-        }
     }
 
     @OnClick({R.id.iv_refuse, R.id.iv_accept})

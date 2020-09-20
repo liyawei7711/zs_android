@@ -1,20 +1,26 @@
 package com.zs.ui.local;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.view.View;
 import android.widget.RadioGroup;
 
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
+import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
+import com.zs.common.AppUtils;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.ui.local.MediaLocalImageFragment;
 import com.zs.ui.local.MediaLocalVideoFragment;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +87,15 @@ public class PhotoAndVideoActivity extends AppBaseActivity {
             }
         });
         initView();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(NetChange bean) {
+        int netStatus = AppUtils.getNetWorkStatus(this);
+        if (netStatus == 0) {
+            imageFragment.upLoadAll();
+            videoFragment.upLoadAll();
+        }
     }
 
     private void initView() {

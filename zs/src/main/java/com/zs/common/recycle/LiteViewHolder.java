@@ -1,17 +1,12 @@
 package com.zs.common.recycle;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import butterknife.ButterKnife;
+import androidx.recyclerview.widget.RecyclerView;
 
-
-/**
- * Author：liyawei
- * Time: 2016/10/26 15:07
- * Email：liyawei@haiye.com
- */
+import com.ttyy.commonanno.Finder;
+import com.ttyy.commonanno.Injectors;
 
 public abstract class LiteViewHolder extends RecyclerView.ViewHolder implements LiteBaseAdapter.HolderData {
     protected View.OnClickListener ocl;
@@ -22,8 +17,8 @@ public abstract class LiteViewHolder extends RecyclerView.ViewHolder implements 
         super(view);
         this.ocl = ocl;
         this.context = context;
-        ButterKnife.bind(this, view);
-
+//        ButterKnife.bind(this, view);
+        Injectors.get().inject(Finder.View, view, this);
     }
 
     public void setMyAdapter(LiteBaseAdapter adapter) {

@@ -14,6 +14,6 @@ public class ErWeiMaBean implements Serializable {
 
     public String phone;
     public String server;
-    public String prot;
+    public String port;
 
 }

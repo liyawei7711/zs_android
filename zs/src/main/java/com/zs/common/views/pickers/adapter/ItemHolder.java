@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import butterknife.BindView;
+import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
 import com.zs.common.recycle.LiteViewHolder;
 import com.zs.common.views.pickers.SelectItemDialog;
@@ -26,6 +26,7 @@ public class ItemHolder extends LiteViewHolder {
 
     public ItemHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        item_name = view.findViewById(R.id.item_name);
         if (ocl != null) {
             itemView.setOnClickListener(ocl);
         }

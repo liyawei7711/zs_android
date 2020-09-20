@@ -5,8 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -14,6 +15,10 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.huaiye.sdk.HYClient;
+import com.qrcode.scanner.QRCodeScannerView;
+import com.qrcode.scanner.ScannerRectView;
+import com.qrcode.scanner.decode.DecodeCallback;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.OnClick;
@@ -22,7 +27,6 @@ import com.zs.BuildConfig;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
-import com.zs.common.ErrorMsg;
 import com.zs.common.dialog.LogicDialog;
 import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
@@ -37,8 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import ttyy.com.coder.scanner.QRCodeScannerView;
-import ttyy.com.coder.scanner.decode.DecodeCallback;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
@@ -54,7 +56,21 @@ import static com.zs.common.AppUtils.nTestNum;
  */
 @BindLayout(R.layout.activity_auth)
 public class LoginActivity extends AppBaseActivity {
+    int REQUEST_EXTERNAL_STORAGE = 1;
+    String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+//            Manifest.permission.SYSTEM_ALERT_WINDOW,
+            Manifest.permission.READ_PHONE_STATE
+    };
 
+    @BindView(R.id.tv_ssss)
+    TextView tv_ssss;
     @BindView(R.id.rg_group)
     RadioGroup rg_group;
     @BindView(R.id.ll_input)
@@ -77,7 +93,7 @@ public class LoginActivity extends AppBaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getNavigate().setVisibility(View.GONE);
-
+        tv_ssss.setText(AppUtils.getIMEIResult(this));
         rg_group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -87,7 +103,8 @@ public class LoginActivity extends AppBaseActivity {
                 } else {
                     ll_input.setVisibility(View.GONE);
                     qr_scanner.setVisibility(View.VISIBLE);
-                    qr_scanner.startDecodeDelay(800);
+                    qr_scanner.startDecode();
+//                    qr_scanner.startDecodeDelay(800);
                 }
             }
         });
@@ -111,14 +128,16 @@ public class LoginActivity extends AppBaseActivity {
         qr_scanner.setDecodeCallback(new DecodeCallback() {
             @Override
             public void onDecodeSuccess(String s) {
+                System.out.println("ccccccccccccccccccccccccc onDecodeSuccess " + s);
                 ErWeiMaBean erWeiMaBean = new Gson().fromJson(s, ErWeiMaBean.class);
-                bean = new OrgBean("", "", erWeiMaBean.server, erWeiMaBean.prot);
+                bean = new OrgBean("", "", erWeiMaBean.server, erWeiMaBean.port);
                 tv_phone.setText(erWeiMaBean.phone);
                 login();
             }
 
             @Override
             public void onDecodeFail(String s) {
+                System.out.println("ccccccccccccccccccccccccc onDecodeFail " + s);
             }
         });
 
@@ -218,12 +237,14 @@ public class LoginActivity extends AppBaseActivity {
     }
 
     private void jumpToMain(boolean isNoCenter, String iphone) {
+        view_load.setVisibility(View.GONE);
         AppUtils.isMeet = false;
         AppUtils.isTalk = false;
         AppUtils.isVideo = false;
-        AppAuth.get().put("loginName", iphone);
+        HYClient.getHYCapture().stopCapture(null);
         setResult(RESULT_OK);
-        startActivity(new Intent(this, MainZSActivity.class));
+        finish();
+//        startActivity(new Intent(this, MainZSActivity.class));
     }
 
     void login() {
@@ -254,7 +275,7 @@ public class LoginActivity extends AppBaseActivity {
                 super.onFailure(httpResponse);
                 view_load.setVisibility(View.GONE);
                 if (!TextUtils.isEmpty(httpResponse.getErrorMessage())) {
-                    showToast(ErrorMsg.getMsg(httpResponse.getStatusCode()));
+                    showToast(httpResponse.getErrorMessage());
                 }
             }
         });

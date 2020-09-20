@@ -2,10 +2,10 @@ package com.zs.ui.local;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,15 +23,12 @@ import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
+import com.zs.common.rx.RxUtils;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.local.holder.VideoHolder;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,31 +59,7 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(FileUpload bean) {
-        if (!bean.isImg) {
-            bean.file.delete();
-            if (datas.contains(bean)) {
-                int i = datas.indexOf(bean);
-                if (bean.isUpload == 3) {
-                    datas.remove(i);
-                    adapter.notifyItemRemoved(i);
-                } else {
-                    adapter.notifyItemChanged(i);
-                    System.out.println("ccccccccccccccccccccccccc1   " + bean.totalBytes + "," + bean.remainingBytes + "," + bean.isUpload);
-                }
-            }
-        }
-    }
-
-    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        EventBus.getDefault().register(this);
         super.onViewCreated(view, savedInstanceState);
         rcv_list = view.findViewById(R.id.rcv_list);
         ll_empty = view.findViewById(R.id.ll_empty);
@@ -112,40 +85,53 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        FileUpload bean = (FileUpload) v.getTag();
+                        FileUpload fileUpload = (FileUpload) v.getTag();
                         if (v.getId() == R.id.iv_upload) {
-                            AuthApi.get().upload(adapter, bean, new ModelCallback<String>() {
+                            AuthApi.get().upload(fileUpload, new ModelCallback<String>() {
                                 @Override
                                 public void onSuccess(String upload) {
-                                    adapter.notifyDataSetChanged();
+
                                 }
-                            });
+                            }, iUploadProgress);
                         } else {
-//                            Intent intent = new Intent(Intent.ACTION_VIEW);
-//                            Uri uri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName()+".fileprovider", bean.file);
-//                            intent.setDataAndType(uri, "video/*");
-//                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//                            startActivity(intent);
+
                             Intent intent = new Intent(getActivity(), MediaLocalVideoPlayActivity.class);
-                            intent.putExtra("path", bean.file.getAbsolutePath());
+                            intent.putExtra("path", fileUpload.file.getAbsolutePath());
                             startActivity(intent);
+//                            AuthApi.get().upload(fileUpload, new ModelCallback<String>() {
+//                                @Override
+//                                public void onSuccess(String upload) {
+
+//                                }
+//                            }, iUploadProgress);
                         }
                     }
                 }, "");
         rcv_list.setAdapter(adapter);
-        showEmty();
+//        showEmty();
     }
+
+    IUploadProgress iUploadProgress = new IUploadProgress() {
+        @Override
+        public void onProgress(FileUpload bean, String from) {
+            if (bean.isUpload == 3) {
+                if (datas.indexOf(bean) != -1) {
+                    datas.remove(bean);
+                    bean.file.delete();
+                }
+            }
+            adapter.notifyDataSetChanged();
+        }
+    };
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        showEmty();
+//        showEmty();
     }
 
     @Override
     public void setModeEdit() {
-        adapter.notifyDataSetChanged();
-        showEmty();
     }
 
     private void showEmty() {
@@ -185,134 +171,12 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
 
     @Override
     public void uploadChoosed() {
-//        uploadingIndexs = adapter.getSelectedPositions();
-//        uploadedIndexs = new ArrayList<>();
-//        if (uploadingIndexs == null
-//                || uploadingIndexs.isEmpty()) {
-//            ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.selected_need_upload_file));
-//            return;
-//        }
-
-        uploadVideo();
-    }
-
-    long taskSession;
-
-    void uploadVideo() {
-        ArrayList<FileTupple> paths = new ArrayList<>();
-
-        fl_progress.setVisibility(View.VISIBLE);
-        HYClient.getModule(ApiIO.class).uploadVideo(SdkParamsCenter.IO.UploadVideo()
-                        .setFiles(paths),
-                new CallbackUploadVideo() {
-                    @Override
-                    public void onTaskSession(long sessionId) {
-                        Log.e("Test", "onTaskSession >>> " + sessionId);
-                        taskSession = sessionId;
-                    }
-
-                    @Override
-                    public boolean onUploadingFileError(int index, String path, int nCode) {
-                        Log.e("Test", "onUploadingFileError >>> " + index + " >>> " + path);
-                        ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.upload_num_is) + index + AppUtils.getString(R.string.is_error));
-                        uploadingIndexs.remove(0);
-                        return true;
-                    }
-
-                    @Override
-                    public void onProgressChanged(int index, String path, int current, int total) {
-                        currentUploadedPercent = (float) current / total;
-                        Log.e("Test", "onProgressChanged >>> " + index + " >>> " + currentUploadedPercent);
-                        pb_progress.setProgress((int) currentUploadedPercent);
-                        tv_progress.setText(AppUtils.getString(R.string.current_progress) + (int) currentUploadedPercent + "%");
-                        adapter.notifyDataSetChanged();
-
-                        if (current == total) {
-                            if (uploadingIndexs.size() > 0) {
-                                uploadedIndexs.add(uploadingIndexs.remove(0));
-                                currentUploadedPercent = 0;
-                            }
-                        }
-
-                        showEmty();
-
-                    }
-
-                    @Override
-                    public void onSuccess(Boolean resp) {
-                        Log.e("Test", "onSuccess >>> " + resp);
-                        fl_progress.setVisibility(View.GONE);
-                        ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.upload_success));
-
-                        rcv_list.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                List<FileUpload> copy = datas;
-
-                                List<FileUpload> dels = new ArrayList<>();
-                                for (int i = 0; i < uploadedIndexs.size(); i++) {
-                                    int position = uploadedIndexs.get(i);
-                                    FileUpload module = datas.get(position);
-
-                                    copy.remove(module);
-                                    dels.add(module);
-                                }
-
-                                uploadingIndexs.clear();
-                                uploadedIndexs.clear();
-
-                                datas.clear();
-                                adapter.notifyDataSetChanged();
-
-//                                MediaFileDao.get().del(dels.toArray(new MediaFileDao.MediaFile[]{}));
-
-                                parent.setChooseAll(isAllChoosed());
-
-                                showEmty();
-
-                            }
-                        }, 1200);
-                    }
-
-                    @Override
-                    public void onError(ErrorInfo errorInfo) {
-                        Log.e("Test", "onError >>> " + errorInfo.toString());
-                        ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.upload_false));
-                    }
-
-                });
 
     }
 
     @Override
     public void cancelCurrentAction() {
-        if (isUploading()) {
-            FileUpload module = datas.get(uploadingIndexs.get(0));
-            SdpMsgStopUploadRecordReq req = new SdpMsgStopUploadRecordReq();
-            req.m_fileName = module.toString();
 
-            HYClient.getModule(ApiIO.class).cancelUploadVideo(taskSession);
-
-            List<FileUpload> copy = datas;
-
-            ArrayList<FileUpload> dels = new ArrayList<>();
-            for (int i = 0; i < uploadedIndexs.size(); i++) {
-                int position = uploadedIndexs.get(i);
-                module = datas.get(position);
-
-                copy.remove(module);
-                dels.add(module);
-            }
-            datas.clear();
-            adapter.notifyDataSetChanged();
-
-            parent.setChooseAll(isAllChoosed());
-        } else {
-            clearStates();
-        }
-
-        showEmty();
     }
 
     @Override
@@ -332,11 +196,11 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
         for (FileUpload tmp : datas) {
             if (tmp.isUpload == 0 ||
                     tmp.isUpload == 2) {
-                AuthApi.get().upload(adapter, tmp, new ModelCallback<String>() {
+                AuthApi.get().upload(tmp, new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String upload) {
                     }
-                });
+                }, iUploadProgress);
             }
         }
     }

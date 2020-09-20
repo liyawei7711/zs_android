@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
+
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -32,13 +34,16 @@ import com.zs.dao.auth.AppAuth;
 import com.zs.models.ConfigResult;
 import com.zs.models.ModelCallback;
 import com.zs.models.ModelSDKErrorResp;
+import com.zs.models.auth.bean.AnJianBean;
 import com.zs.models.auth.bean.AuthUser;
+import com.zs.models.auth.bean.CommonBean;
 import com.zs.models.auth.bean.DeviceTrailBean;
 import com.zs.models.auth.bean.Upload;
 import com.zs.models.auth.bean.VersionData;
 import com.zs.models.download.DownloadApi;
 import com.zs.models.download.DownloadService;
 import com.zs.models.download.ErrorDialogActivity;
+import com.zs.ui.local.IUploadProgress;
 import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.local.bean.UploadModelBean;
 
@@ -136,7 +141,7 @@ public class AuthApi {
 
     public void logout(Context context, ModelCallback<Object> callback) {
         URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/loginout";
-        Https.post(URL)
+        Https.get(URL)
                 .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("phone", AppAuth.get().getUserLoginName())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
@@ -159,12 +164,14 @@ public class AuthApi {
                         .setUserName(account), new SdkCallback<CUserRegisterRsp>() {
                     @Override
                     public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
+                        System.out.println("ccccccccccccccccccccc onSuccess:"+cUserRegisterRsp.strUserTokenID);
                         AppAuth.get().put("strTokenHY", cUserRegisterRsp.strUserTokenID);
                         successDeal(callback, null, cUserRegisterRsp);
                     }
 
                     @Override
                     public void onError(final ErrorInfo errorInfo) {
+                        System.out.println("ccccccccccccccccccccc onError:"+errorInfo.toString());
                         errorDeal(errorInfo, callback);
                     }
                 });
@@ -172,6 +179,7 @@ public class AuthApi {
 
     public void login(final Context context, final String account, final ModelCallback<AuthUser> callback) {
         URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/login";
+        AppAuth.get().put("strTokenHY", "");
         Https.get(URL)
                 .addParam("phone", account)
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
@@ -195,14 +203,15 @@ public class AuthApi {
                             authUser = new Gson().fromJson(str, AuthUser.class);
                             AppAuth.get().setAuthUser(authUser);
                         } catch (Exception e) {
+                            CommonBean bean = new Gson().fromJson(str, CommonBean.class);
                             if (callback != null) {
-                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_empty_code, "HTTP ERROR AuthApi"));
+                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_empty_code, bean.msg));
                             }
                             return;
                         }
                         if (authUser == null) {
                             if (callback != null) {
-                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_empty_code, "HTTP ERROR AuthApi"));
+                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_empty_code, "登录出错"));
                             }
                             return;
                         }
@@ -211,7 +220,8 @@ public class AuthApi {
                                 if (BuildConfig.DEBUG) {
                                     loginHY(account, callback);
                                 }
-                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(-1, authUser.msg));
+                                CommonBean bean = new Gson().fromJson(str, CommonBean.class);
+                                callback.onFailure(new ModelSDKErrorResp().setErrorMessage(-1, bean.msg));
                             }
                             return;
                         }
@@ -222,7 +232,7 @@ public class AuthApi {
                     public void onFailure(HTTPResponse response) {
                         super.onFailure(response);
                         if (callback != null) {
-                            callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_err_code, "HTTP ERROR AuthApi "));
+                            callback.onFailure(new ModelSDKErrorResp().setErrorMessage(login_err_code, "登录出错"));
                         }
                     }
                 })
@@ -232,6 +242,9 @@ public class AuthApi {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void pushGPS(Context context, BDLocation location) {
+        if(TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+            return;
+        }
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
         int battery = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         DeviceTrailBean mediaDeviceTrailEntity = new DeviceTrailBean();
@@ -240,9 +253,16 @@ public class AuthApi {
         mediaDeviceTrailEntity.userId = AppAuth.get().getUserID();
         mediaDeviceTrailEntity.time = AppUtils.getTime(System.currentTimeMillis());
         mediaDeviceTrailEntity.electricityQuantity = battery + "";
+        mediaDeviceTrailEntity.deviceId = battery + "";
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceTrail")
                 .addHeader("Authorization", AppAuth.get().getToken())
-                .addParam("mediaDeviceTrailEntity", mediaDeviceTrailEntity)
+//                .addParam("mediaDeviceTrailEntity", mediaDeviceTrailEntity)
+                .addParam("accuracy", location.getLatitude() + "")
+                .addParam("dimension", location.getLongitude() + "")
+                .addParam("userId", AppAuth.get().getUserID())
+                .addParam("time", AppUtils.getTime(System.currentTimeMillis()))
+                .addParam("deviceId", AppUtils.getIMEIResult(context))
+                .addParam("electricityQuantity", battery + "")
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
@@ -267,15 +287,15 @@ public class AuthApi {
                 .requestNowAsync();
     }
 
-    public void startUsDevice(Context context, String caseName) {
+    public void startUsDevice(Context context, AnJianBean bean) {
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceInUse")
                 .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
-                .addParam("caseName", caseName)
-                .addParam("businessId", caseName)
-                .addParam("companyName", caseName)
-                .addParam("nodeCode", caseName)
-                .addParam("nodeName", caseName)
+                .addParam("caseName", bean.caseName)
+                .addParam("businessId", bean.businessId)
+                .addParam("companyName", bean.companyName)
+                .addParam("nodeCode", bean.nodeCode)
+                .addParam("nodeName", bean.nodeName)
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
@@ -286,13 +306,13 @@ public class AuthApi {
                 .requestNowAsync();
     }
 
-    public void changeCapture(Context context, String url, boolean isCapture) {
+    public void changeCapture(Context context, String url, boolean isCapture, AnJianBean bean) {
         if (isCapture) {
-            startUsDevice(context, "");
+            startUsDevice(context, bean);
         } else {
             startUnUsDevice(context);
         }
-        Https.get(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
+        Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
                 .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("userId", AppAuth.get().getUserID())
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
@@ -506,12 +526,14 @@ public class AuthApi {
     /**
      * 上传
      *
-     * @param adapter
      * @param tag
      */
-    public void upload(final LiteBaseAdapter<FileUpload> adapter, final FileUpload tag, final ModelCallback<String> callback) {
+    public void upload(final FileUpload tag,
+                       final ModelCallback<String> callback,
+                       final IUploadProgress progress) {
         UploadModelBean bean = new UploadModelBean(tag);
 
+        System.out.println("ccccccccccccccccccccccc start " +tag.file.getName());
         OkHttpClient Client = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -546,8 +568,9 @@ public class AuthApi {
 
                                     @Override
                                     public void doOnMain(Object data) {
-                                        adapter.notifyItemChanged(adapter.getDatas().indexOf(tag));
-                                        System.out.println("cccccccccccccccccccccc total : " + totalBytes + ", left:" + remainingBytes + "  ddd  " + adapter.getDatas().indexOf(tag));
+                                        if(progress != null) {
+                                            progress.onProgress(tag, "553");
+                                        }
                                     }
                                 });
                             }
@@ -561,6 +584,7 @@ public class AuthApi {
                 .build();
 
         Client.newCall(request).enqueue(new Callback() {
+
             @Override
             public void onFailure(Call call, IOException e) {
                 try {
@@ -571,15 +595,12 @@ public class AuthApi {
                 } catch (Exception ex) {
 
                 }
-
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try {
                     String strResp = response.body().string();
-                    callback.onSuccess(strResp);
-
                     tag.remainingBytes = 100;
                     tag.totalBytes = 100;
                     tag.isUpload = 3;
@@ -595,7 +616,10 @@ public class AuthApi {
 
                     @Override
                     public void doOnMain(Object data) {
-                        adapter.notifyItemChanged(adapter.getDatas().indexOf(tag));
+                        if(progress != null) {
+                            System.out.println("ccccccccccccccccccccccc start success " +tag.file.getName());
+                            progress.onProgress(tag, "603");
+                        }
                     }
                 });
 

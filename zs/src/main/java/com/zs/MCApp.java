@@ -5,9 +5,10 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.multidex.MultiDexApplication;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.multidex.MultiDexApplication;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.huaiye.sdk.HYClient;
@@ -91,25 +92,6 @@ public class MCApp extends MultiDexApplication {
     }
 
     public void gotoLogin(boolean showDialog) {
-//        EventBus.getDefault().post(new KickOutUIObserver.UIKickout());
-//        SP.putBoolean(STRING_KEY_needload, false);
-//
-//        AuthApi.get().logout();
-//        Intent loginIntent = new Intent();
-//        if (showDialog) {
-//            loginIntent.putExtra("showKickOutDialog", 1);
-//        }
-//        if (topActivity != null) {
-//            Logger.debug("topActivity not null");
-//            loginIntent.setClass(topActivity, LoginActivity.class);
-//            topActivity.startActivity(loginIntent);
-//        } else {
-//            Logger.debug("topActivity is null");
-//            loginIntent.setClass(MCApp.this, LoginActivity.class);
-//            loginIntent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-//            startActivity(loginIntent);
-//        }
-//        EventBus.getDefault().post(new LogoutBean());
     }
 
     public void gotoClose() {

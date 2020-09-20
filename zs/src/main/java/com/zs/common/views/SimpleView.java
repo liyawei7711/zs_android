@@ -2,11 +2,12 @@ package com.zs.common.views;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.LinearLayoutCompat;
 
 import com.zs.R;
 import com.zs.common.AppUtils;

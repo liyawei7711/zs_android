@@ -8,13 +8,11 @@ import android.widget.TextView;
 import com.huaiye.cmf.JniIntf;
 import com.zs.R;
 import com.zs.common.recycle.LiteViewHolder;
-import com.zs.common.views.progress.DownLoadProgressbar;
 import com.zs.ui.local.bean.FileUpload;
 
-import java.io.File;
 import java.util.List;
 
-import butterknife.BindView;
+import com.ttyy.commonanno.anno.BindView;
 
 /**
  * author: admin
@@ -37,6 +35,10 @@ public class VideoHolder extends LiteViewHolder {
 
     public VideoHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        tv_video_name = view.findViewById(R.id.tv_video_name);
+        tv_video_size = view.findViewById(R.id.tv_video_size);
+        iv_upload = view.findViewById(R.id.iv_upload);
+        pb_progress = view.findViewById(R.id.pb_progress);
         itemView.setOnClickListener(ocl);
         iv_upload.setOnClickListener(ocl);
     }

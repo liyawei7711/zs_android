@@ -4,14 +4,15 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import com.huaiye.cmf.sdp.SdpMsgFindLanCaptureDeviceRsp;
 import com.huaiye.sdk.HYClient;
@@ -22,23 +23,16 @@ import com.huaiye.sdk.sdpmsgs.meet.CGetMeetingInfoRsp;
 import com.huaiye.sdk.sdpmsgs.social.CQueryUserListRsp;
 import com.ttyy.commonanno.Finder;
 import com.ttyy.commonanno.Injectors;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import com.zs.MCApp;
-import com.zs.R;
 import com.zs.bus.AcceptDiaoDu;
+import com.zs.bus.CaptureZhiFaMessage;
 import com.zs.bus.LocalFaceAlarm;
 import com.zs.bus.LogoutBean;
 import com.zs.bus.LowPowerMsg;
 import com.zs.bus.NetStatusChange;
 import com.zs.bus.ServerFaceAlarm;
 import com.zs.bus.TalkInvistor;
+import com.zs.bus.ZhiFaClickMessage;
 import com.zs.common.dialog.LogicDialog;
 import com.zs.common.dialog.LogicTimeDialog;
 import com.zs.common.dialog.ZeusLoadView;
@@ -46,9 +40,7 @@ import com.zs.common.rx.RxUtils;
 import com.zs.common.views.NavigateView;
 import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.CaptureMessage;
-import com.zs.bus.CaptureZhiFaMessage;
 import com.zs.dao.msgs.PlayerMessage;
-import com.zs.bus.ZhiFaClickMessage;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.KickOutUIObserver;
@@ -57,6 +49,13 @@ import com.zs.ui.auth.LoginActivity;
 import com.zs.ui.guide.WelcomeActivity;
 import com.zs.ui.home.KeyCodeSettingActivity;
 import com.zs.ui.home.MainZSActivity;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
@@ -273,10 +272,10 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                 //告知界面,关闭各种采集
                 EventBus.getDefault().post(new KickOutUIObserver.UIKickout());
 
-                if (data.haveTryLogin){
+                if (data.haveTryLogin) {
                     //已经尝试过自动登录还是掉线
                     onDisconnected();
-                }else {
+                } else {
                     // p2p超过2分钟后,业务服务器会把用户踢掉,这时候掉线再尝试下登录
                     String account = AppAuth.get().getUserLoginName();
 
@@ -300,7 +299,6 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                 }
 
 
-
                 break;
             case Connecting:
 //                if (HYClient.getSdkOptions().P2P().isSupportP2P()) {
@@ -315,8 +313,9 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
 //                    }
 //                }
 
-                if (!AppUtils.isHide && !HYClient.getSdkOptions().P2P().isSupportP2P())
-                    showToast(AppUtils.getString(R.string.has_server_connecting));
+                if (!AppUtils.isHide && !HYClient.getSdkOptions().P2P().isSupportP2P()) {
+//                    showToast(AppUtils.getString(R.string.has_server_connecting));
+                }
                 break;
         }
     }
@@ -345,6 +344,7 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     }
 
     /**
+     *
      */
     private void needLoad() {
         if (MCApp.getInstance().getTopActivity() != this) {
@@ -461,10 +461,10 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                 if (AppUtils.video_key != -1) {
                     EventBus.getDefault().post(new CaptureZhiFaMessage());
                 }
-            }else if (keyCode == AppUtils.ptt_channel_left) {
+            } else if (keyCode == AppUtils.ptt_channel_left) {
                 if (AppUtils.ptt_channel_left != -1) {
                 }
-            }else if (keyCode == AppUtils.ptt_channel_right) {
+            } else if (keyCode == AppUtils.ptt_channel_right) {
                 if (AppUtils.ptt_channel_right != -1) {
                 }
             }

@@ -25,8 +25,8 @@ public class AuthUser implements Serializable {
      */
 
     public String msg;
-    private UserEntityBean userEntity;
-    private ServerBean server;
+    public UserEntityBean userEntity;
+    public ServerBean server;
     public String code;
     public String data;
 
@@ -129,62 +129,62 @@ public class AuthUser implements Serializable {
          * fullDeptName : null
          */
 
-        private String id;
-        private String createUser;
-        private String createTime;
-        private String updateUser;
-        private String updateTime;
+        public String id;
+        public String createUser;
+        public String createTime;
+        public String updateUser;
+        public String updateTime;
         public String hyToken;
-        private Object orderNum;
-        private String delFlag;
-        private String username;
-        private String password;
-        private String salt;
-        private String cardId;
-        private String email;
-        private String mobile;
-        private int status;
-        private String deptId;
-        private String nickName;
-        private String position;
-        private int isAdmin;
-        private String loginTime;
-        private int errorNum;
-        private String isLock;
-        private String token;
-        private Object expireTime;
-        private String identityCard;
-        private String deptCode;
-        private String needPswUpt;
-        private String sexCode;
-        private String fzjg;
-        private String ssztqc;
-        private String professionalName;
-        private String professionalRankCode;
-        private String nationCode;
-        private String highestEducationCode;
-        private String profession;
-        private String personnelNatureCode;
-        private String isJdry;
-        private String isFlzyzg;
-        private String isWt;
-        private String isSq;
-        private String isCompletion;
-        private Object picId;
-        private Object faceId;
-        private Object fingerprintId;
-        private String zylb;
-        private String lastUptPswTime;
-        private int isSynData;
-        private int loginType;
-        private Object mapId;
-        private Object code;
-        private String roleNameList;
-        private String deptName;
-        private Object encryptPassword;
-        private Object deptNameWithFullLevel;
-        private Object fullDeptName;
-        private List<String> roleIdList;
+        public Object orderNum;
+        public String delFlag;
+        public String username;
+        public String password;
+        public String salt;
+        public String cardId;
+        public String email;
+        public String mobile;
+        public int status;
+        public String deptId;
+        public String nickName;
+        public String position;
+        public int isAdmin;
+        public String loginTime;
+        public int errorNum;
+        public String isLock;
+        public String token;
+        public Object expireTime;
+        public String identityCard;
+        public String deptCode;
+        public String needPswUpt;
+        public String sexCode;
+        public String fzjg;
+        public String ssztqc;
+        public String professionalName;
+        public String professionalRankCode;
+        public String nationCode;
+        public String highestEducationCode;
+        public String profession;
+        public String personnelNatureCode;
+        public String isJdry;
+        public String isFlzyzg;
+        public String isWt;
+        public String isSq;
+        public String isCompletion;
+        public Object picId;
+        public Object faceId;
+        public Object fingerprintId;
+        public String zylb;
+        public String lastUptPswTime;
+        public int isSynData;
+        public int loginType;
+        public Object mapId;
+        public Object code;
+        public String roleNameList;
+        public String deptName;
+        public Object encryptPassword;
+        public Object deptNameWithFullLevel;
+        public Object fullDeptName;
+        public List<String> roleIdList;
 
         public String getId() {
             return id;
@@ -644,15 +644,15 @@ public class AuthUser implements Serializable {
          * mediaCharset :
          */
 
-        private String mediaWebUrl;
+        public String mediaWebUrl;
 
-        private String mediaUrl;
-        private String mediaPort;
+        public String mediaUrl;
+        public String mediaPort;
 
-        private String rtspUrl;
-        private String rtspPort;
+        public String rtspUrl;
+        public String rtspPort;
 
-        private String mediaCharset;
+        public String mediaCharset;
 
         public String getRtspUrl() {
             return rtspUrl;

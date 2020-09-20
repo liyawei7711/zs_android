@@ -6,34 +6,33 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.baidu.location.BDLocation;
 import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
 import com.huaiye.sdk.logger.Logger;
 import com.huaiye.sdk.sdkabi._api.ApiAuth;
-import com.huaiye.sdk.sdkabi._api.ApiMeet;
-import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
-import com.huaiye.sdk.sdpmsgs.meet.CGetMbeConfigParaRsp;
+import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.route.BindExtra;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.KeyCodeEvent;
+import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
-import com.zs.common.ErrorMsg;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
@@ -51,7 +50,9 @@ import com.zs.ui.Capture.CaptureGuanMoOrPushActivity;
 import com.zs.ui.auth.LoginActivity;
 import com.zs.ui.home.holder.MainZSMenuBean;
 import com.zs.ui.home.holder.MainZsHolder;
+import com.zs.ui.local.IUploadProgress;
 import com.zs.ui.local.PhotoAndVideoActivity;
+import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.web.WebJSActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -107,6 +108,19 @@ public class MainZSActivity extends AppBaseActivity {
     private Handler lightHandler;
     // 60秒时间不点击屏幕，屏幕变暗
     private long delayTime = 6 * 1000L;
+    boolean isShow;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isShow = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isShow = false;
+    }
 
     @Override
     protected void initActionBar() {
@@ -134,6 +148,11 @@ public class MainZSActivity extends AppBaseActivity {
         });
         GPSLocation.get().startGpsObserver();
 
+        ModelApis.Auth().requestVersion(this, new ModelCallback<VersionData>() {
+            @Override
+            public void onSuccess(VersionData versionData) {
+            }
+        });
 
     }
 
@@ -146,7 +165,20 @@ public class MainZSActivity extends AppBaseActivity {
             }
         });
 
-//        requestConfig();
+        if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+            ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+
+                @Override
+                public void onSuccess(AuthUser authUser) {
+                }
+
+                @Override
+                public void onFailure(HTTPResponse httpResponse) {
+                    super.onFailure(httpResponse);
+                }
+            });
+        }
+
         datas.add(new MainZSMenuBean(R.drawable.zs_main_photo, "影像采集", 1));
         datas.add(new MainZSMenuBean(R.drawable.zs_main_video, "视频通话", 2));
         datas.add(new MainZSMenuBean(R.drawable.zs_main_local, "媒体回看", 3));
@@ -167,16 +199,26 @@ public class MainZSActivity extends AppBaseActivity {
                         MainZSMenuBean bean = (MainZSMenuBean) v.getTag();
                         switch (bean.code) {
                             case 1:
-                                startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
-                                break;
-                            case 2:
-                                MediaFileDaoUtils.get().clear();
-                                ModelApis.Auth().requestVersion(MainZSActivity.this, new ModelCallback<VersionData>() {
+                                HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
                                     @Override
-                                    public void onSuccess(VersionData versionData) {
-                                        System.out.println("最新版本:" + AppUtils.getString(R.string.activity_about_has_new));
+                                    public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+                                        startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+                                    }
+
+                                    @Override
+                                    public void onError(ErrorInfo errorInfo) {
+
                                     }
                                 });
+                                break;
+                            case 2:
+//                                MediaFileDaoUtils.get().clear();
+//                                ModelApis.Auth().requestVersion(MainZSActivity.this, new ModelCallback<VersionData>() {
+//                                    @Override
+//                                    public void onSuccess(VersionData versionData) {
+//                                        System.out.println("最新版本:" + AppUtils.getString(R.string.activity_about_has_new));
+//                                    }
+//                                });
                                 break;
                             case 3:
                                 startActivity(new Intent(MainZSActivity.this, PhotoAndVideoActivity.class));
@@ -198,10 +240,10 @@ public class MainZSActivity extends AppBaseActivity {
                                             AuthApi.get().logout(MainZSActivity.this, new ModelCallback<Object>() {
                                                 @Override
                                                 public void onSuccess(Object o) {
-                                                    AppAuth.get().put("loginName", "");
+                                                    AppAuth.get().clear();
                                                     HYClient.getModule(ApiAuth.class).logout(null);
                                                     changeMenu();
-                                                    finish();
+//                                                    finish();
                                                 }
                                             });
                                         }
@@ -225,6 +267,7 @@ public class MainZSActivity extends AppBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
+            onEvent(new NetChange());
             changeMenu();
         }
     }
@@ -306,9 +349,65 @@ public class MainZSActivity extends AppBaseActivity {
             startActivity(intent);
         }
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(KeyCodeEvent bean) {
-        showToast("点击按钮");
+        if (!isShow) {
+            return;
+        }
+        if (bean.action.equals("zzx_action_record")) {
+            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+        } else if (bean.action.equals("zzx_action_capture")) {
+            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+        } else if (bean.action.equals("zzx_action_mic")) {
+
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(NetChange bean) {
+        if (!isShow) {
+            return;
+        }
+//        if(BuildConfig.DEBUG) {
+//            return;
+//        }
+        int netStatus = AppUtils.getNetWorkStatus(this);
+        if (netStatus == 0) {
+            ArrayList<FileUpload> videos = MediaFileDaoUtils.get().getAllVideos();
+            ArrayList<FileUpload> images = MediaFileDaoUtils.get().getAllImgs();
+            for (FileUpload temp : videos) {
+                onEvent(temp);
+            }
+            for (FileUpload temp : images) {
+                onEvent(temp);
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(FileUpload bean) {
+//        if(BuildConfig.DEBUG) {
+//            return;
+//        }
+        System.out.println("ccccccccccccccccccccccc start");
+        if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+            return;
+        }
+        AuthApi.get().upload(bean, new ModelCallback<String>() {
+            @Override
+            public void onSuccess(String upload) {
+
+            }
+        }, new IUploadProgress() {
+            @Override
+            public void onProgress(FileUpload bean, String from) {
+                if (bean.isUpload == 3) {
+                    System.out.println("ccccccccccccccccccccccc success");
+                    bean.file.delete();
+                }
+            }
+        });
     }
 
     /**
@@ -358,6 +457,7 @@ public class MainZSActivity extends AppBaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        isShow = false;
         EventBus.getDefault().unregister(this);
     }
 }

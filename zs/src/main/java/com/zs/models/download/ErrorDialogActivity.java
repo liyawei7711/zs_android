@@ -10,8 +10,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import com.ttyy.commonanno.Finder;
+import com.ttyy.commonanno.Injectors;
+import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
@@ -45,7 +46,7 @@ public class ErrorDialogActivity extends AppBaseActivity {
         setFinishOnTouchOutside(false);
         setContentView(R.layout.activity_infodialog);
 
-        ButterKnife.bind(this);
+        Injectors.get().inject(Finder.View, userContent, this);
 
         initListener();
     }

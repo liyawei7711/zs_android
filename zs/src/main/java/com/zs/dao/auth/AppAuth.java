@@ -38,8 +38,21 @@ public class AppAuth {
         return Holder.SINGLETON;
     }
 
-    public void setAuthUser(AuthUser user) {
+    public void clear() {
+        put("strUserID", "");
+        put("strUserName", "");
+        put("loginName", "");
+        put("strSieIP", "");
+        put("nSiePort", "");
+        put("strSiePlayIP", "");
+        put("nSiePlayPort", "");
+        put("web_h5", "");
+        put("strToken", "");
+        put("strTokenHY", "");
+        put("AnJianBean", "");
+    }
 
+    public void setAuthUser(AuthUser user) {
         // 缓存
         put("strUserID", user.getUserEntity().getId());
         put("strUserName", user.getUserEntity().getUsername());
@@ -47,7 +60,7 @@ public class AppAuth {
 //        put("strDomainCode", user.strDomainCode);
 //        put("nPriority", user.nPriority);
 //
-        if(user.getServer() != null) {
+        if (user.getServer() != null) {
             put("strSieIP", user.getServer().getMediaUrl());
             put("nSiePort", user.getServer().getMediaPort());
 
@@ -72,9 +85,11 @@ public class AppAuth {
     public String getToken() {
         return get("strToken");
     }
+
     public String getTokenHY() {
         return get("strTokenHY");
     }
+
     public String getH5Web() {
         return get("web_h5");
     }
@@ -111,6 +126,10 @@ public class AppAuth {
         }
     }
 
+    public String getAnJian() {
+        return get("AnJianBean");
+    }
+
     public String getUserName() {
         return get("strUserName");
     }
@@ -132,9 +151,9 @@ public class AppAuth {
     }
 
     public int getSieHttpPort() {
-        try{
+        try {
             return Integer.parseInt(get(SIE_HTTP_PORT, "8000"));
-        } catch (Exception e){
+        } catch (Exception e) {
             return 8000;
         }
     }

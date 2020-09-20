@@ -3,9 +3,10 @@ package com.zs.ui.auth;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.View;
 
 import com.ttyy.commonanno.anno.BindLayout;
@@ -50,13 +51,24 @@ public class SelectOrgActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
-        datas.add(new OrgBean("省厅", "1", "36.152.32.85", "8086"));
-        datas.add(new OrgBean("苏州", "2", "36.152.32.85", "8086"));
-        datas.add(new OrgBean("无锡", "3", "36.152.32.85", "8086"));
+        datas.add(new OrgBean("省厅", "180.101.234.103", "36.152.32.85", "18086"));
+        datas.add(new OrgBean("苏州", "2", "58.210.227.111", "8086"));
+        datas.add(new OrgBean("无锡", "3", "2.20.102.118", "8086"));
         datas.add(new OrgBean("南京", "4", "36.152.32.85", "8086"));
         datas.add(new OrgBean("徐州", "5", "36.152.32.85", "8086"));
-        datas.add(new OrgBean("镇江", "6", "36.152.32.85", "8086"));
-        datas.add(new OrgBean("淮安", "7", "36.152.32.85", "8086"));
+        datas.add(new OrgBean("镇江", "6", "36.156.30.203", "8086"));
+        datas.add(new OrgBean("淮安", "7", "222.184.59.37", "8086"));
+        datas.add(new OrgBean("宿迁", "8", "116.198.207.104", "8086"));
+        datas.add(new OrgBean("盐城", "9", "120.195.30.72", "8086"));
+        datas.add(new OrgBean("扬州", "10", "58.220.130.166", "8086"));
+        datas.add(new OrgBean("南通", "11", "58.221.238.134", "8086"));
+        datas.add(new OrgBean("连云港", "12", "117.60.146.201", "8086"));
+        datas.add(new OrgBean("常州", "13", "222.185.127.218", "8086"));
+        datas.add(new OrgBean("泰州", "14", "218.90.248.152", "8086"));
+        datas.add(new OrgBean("测试", "15", "36.152.32.85", "8086"));
+        datas.add(new OrgBean("演示", "16", "36.152.32.85", "18086"));
+        datas.add(new OrgBean("预发布", "17", "36.152.32.85", "8086"));
+        datas.add(new OrgBean("本地", "18", "192.168.0.66", "18086"));
         adapter = new LiteBaseAdapter<>(this,
                 datas,
                 OrgHolder.class,

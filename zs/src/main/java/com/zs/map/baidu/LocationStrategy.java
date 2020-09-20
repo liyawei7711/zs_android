@@ -1,7 +1,7 @@
 package com.zs.map.baidu;
 
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
 import android.text.TextUtils;
 
 import com.baidu.location.BDAbstractLocationListener;
@@ -185,6 +185,7 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
     }
 
 
+    long lastTime;
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onReceiveLocation(BDLocation bdLocation) {
@@ -201,7 +202,10 @@ public abstract class LocationStrategy extends BDAbstractLocationListener {
         }
 
         //返回的定位信息是错的
-        AuthApi.get().pushGPS(MCApp.getInstance(), bdLocation);
+        if(System.currentTimeMillis() - lastTime > 5 * 1000) {
+            lastTime = System.currentTimeMillis();
+            AuthApi.get().pushGPS(MCApp.getInstance(), bdLocation);
+        }
         //发送到界面
         EventBus.getDefault().post(bdLocation);
         if (bdLocation.getLatitude() == 0 || bdLocation.getLongitude() == 0

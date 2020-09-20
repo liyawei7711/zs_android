@@ -8,12 +8,11 @@ import android.widget.TextView;
 
 import com.zs.R;
 import com.zs.common.recycle.LiteViewHolder;
-import com.zs.common.views.progress.DownLoadProgressbar;
 import com.zs.ui.local.bean.FileUpload;
 
 import java.util.List;
 
-import butterknife.BindView;
+import com.ttyy.commonanno.anno.BindView;
 
 /**
  * author: admin
@@ -36,6 +35,10 @@ public class ImageHolder extends LiteViewHolder {
 
     public ImageHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        tv_image_name = view.findViewById(R.id.tv_image_name);
+        tv_image_size = view.findViewById(R.id.tv_image_size);
+        iv_upload = view.findViewById(R.id.iv_upload);
+        pb_progress = view.findViewById(R.id.pb_progress);
         itemView.setOnClickListener(ocl);
         iv_upload.setOnClickListener(ocl);
     }

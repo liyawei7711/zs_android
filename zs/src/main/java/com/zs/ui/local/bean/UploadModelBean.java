@@ -1,20 +1,21 @@
 package com.zs.ui.local.bean;
 
+import android.text.TextUtils;
+
+import com.google.gson.Gson;
 import com.huaiye.cmf.JniIntf;
 import com.zs.MCApp;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
 import com.zs.dao.auth.AppAuth;
+import com.zs.models.auth.bean.AnJianBean;
 
 import java.io.Serializable;
 
-import static com.zs.common.AppUtils.STRING_KEY_HD1080P;
-import static com.zs.common.AppUtils.STRING_KEY_HD720P;
-import static com.zs.common.AppUtils.STRING_KEY_VGA;
-import static com.zs.common.AppUtils.STRING_KEY_capture;
 import static com.zs.common.AppUtils.STRING_KEY_photo;
 
 public class UploadModelBean implements Serializable {
+    public String Authorization = AppAuth.get().getToken();
     public String userId = AppAuth.get().getUserID();
     public String deviceId = AppUtils.getIMEIResult(MCApp.getInstance());
     public String accuracy = "24.25";
@@ -24,21 +25,37 @@ public class UploadModelBean implements Serializable {
     public long size;
     public String resolutionRatio;
     public int type;
-    public String businessId = "111";
+    public String businessId = "";
     public String fileName;
     public String fileMakeDate;
-    public String nodeCode = "xcjc";
-    public String nodeName = "123";
-    public String caseName = "123123";
-    public String companyName = "123123123";
-    public String caseRelationFlag = "0";
+    public String nodeCode = "";
+    public String nodeName = "";
+    public String caseName = "";
+    public String companyName = "";
+    public String caseRelationFlag = "";
     public String keyEvidenceFlag = "0";
 
     public UploadModelBean(FileUpload tag) {
         //2020-09-12_21-42-20_android_video.dat
         //2020-09-15_21-51-11_video.mp4
         // 2020-09-12_15-24-47_android_image.jpg
-        shootTime = tag.name.substring(0, 10)+" "+tag.name.substring(11, 19).replaceAll("-",":");        size = tag.file.length();
+        if (!TextUtils.isEmpty(AppAuth.get().getAnJian())) {
+            AnJianBean bean = new Gson().fromJson(AppAuth.get().getAnJian(), AnJianBean.class);
+            businessId = bean.businessId;
+            nodeCode = bean.nodeCode;
+            nodeName = bean.nodeName;
+            nodeName = bean.nodeName;
+            caseName = bean.caseName;
+            companyName = bean.companyName;
+            caseRelationFlag = "1";
+        } else {
+            caseRelationFlag = "0";
+        }
+        accuracy = MCApp.getInstance().locationService.getCurrentBDLocation().getLatitude() + "";
+        dimension = MCApp.getInstance().locationService.getCurrentBDLocation().getLongitude() + "";
+
+        shootTime = tag.name.substring(0, 10) + " " + tag.name.substring(11, 19).replaceAll("-", ":");
+        size = tag.file.length();
 
         if (tag.file.getName().endsWith(".jpg")) {
             type = 1;

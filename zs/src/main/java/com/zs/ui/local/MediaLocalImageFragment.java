@@ -2,8 +2,9 @@ package com.zs.ui.local;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +57,7 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
         if (bean.isImg) {
             bean.file.delete();
             int i = datas.indexOf(bean);
-            if(bean.isUpload == 3) {
+            if (bean.isUpload == 3) {
                 datas.remove(i);
                 adapter.notifyItemRemoved(i);
             } else {
@@ -82,11 +83,11 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                     public void onClick(View v) {
                         FileUpload bean = (FileUpload) v.getTag();
                         if (v.getId() == R.id.iv_upload) {
-                            AuthApi.get().upload(adapter, bean, new ModelCallback<String>() {
+                            AuthApi.get().upload(bean, new ModelCallback<String>() {
                                 @Override
                                 public void onSuccess(String upload) {
                                 }
-                            });
+                            }, iUploadProgress);
                         } else {
                             Intent intent = new Intent(getActivity(), ImageShowActivity.class);
                             intent.putExtra("imageUrl", bean.file.getAbsolutePath());
@@ -96,6 +97,27 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                 }, "");
         rcv_list.setAdapter(adapter);
     }
+
+    IUploadProgress iUploadProgress = new IUploadProgress() {
+        @Override
+        public void onProgress(FileUpload bean, String from) {
+            if (datas.contains(bean)) {
+                if (bean.isImg) {
+                    int i = datas.indexOf(bean);
+                    if (bean.isUpload == 3) {
+                        bean.file.delete();
+                        datas.remove(i);
+                        adapter.notifyItemRemoved(i);
+                    } else {
+                        adapter.notifyItemChanged(i);
+                    }
+                }
+            } else {
+                bean.file.delete();
+                adapter.notifyDataSetChanged();
+            }
+        }
+    };
 
     @Override
     public void setModeEdit() {
@@ -158,11 +180,11 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
         for (FileUpload tmp : datas) {
             if (tmp.isUpload == 0 ||
                     tmp.isUpload == 2) {
-                AuthApi.get().upload(adapter, tmp, new ModelCallback<String>() {
+                AuthApi.get().upload(tmp, new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String upload) {
                     }
-                });
+                }, iUploadProgress);
             }
         }
     }

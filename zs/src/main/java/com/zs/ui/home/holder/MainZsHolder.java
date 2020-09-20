@@ -5,12 +5,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ttyy.commonanno.Finder;
+import com.ttyy.commonanno.Injectors;
 import com.zs.R;
 import com.zs.common.recycle.LiteViewHolder;
 
 import java.util.List;
 
-import butterknife.BindView;
+import com.ttyy.commonanno.anno.BindView;
 
 /**
  * author: admin
@@ -30,6 +32,8 @@ public class MainZsHolder extends LiteViewHolder {
 
     public MainZsHolder(Context context, View view, View.OnClickListener ocl, Object obj) {
         super(context, view, ocl, obj);
+        main_icon = view.findViewById(R.id.main_icon);
+        main_name = view.findViewById(R.id.main_name);
         itemView.setOnClickListener(ocl);
     }
 
