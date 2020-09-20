@@ -273,6 +273,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 }
                 lstTakePicker = System.currentTimeMillis();
                 if (HYClient.getMemoryChecker().checkEnough()) {
+                    final String finalStr = mMediaFile == null ? "" : mMediaFile.getRecordPath();
                     mMediaFile = MediaFileDaoUtils.get().getImgRecordFile();
                     HYClient.getHYCapture().snapShotCapture(mMediaFile.getRecordPath(), new SdkCallback<String>() {
 
@@ -283,7 +284,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                                 @Override
                                 public void onMainDelay() {
                                     showToast("拍照成功，正在处理");
-                                    pushLocalData();
+                                    pushLocalData(finalStr);
                                 }
                             });
                         }
@@ -529,9 +530,12 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 });
     }
 
-    private void stopTime() {
+    private void closeMedia() {
         AuthApi.get().changeCapture(getContext(), "", false, bean == null ? new AnJianBean() : bean);
         AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
+    }
+
+    private void stopTime() {
         tv_time.setText("");
         if (timeDisposable != null && !timeDisposable.isDisposed()) {
             timeDisposable.dispose();
@@ -567,18 +571,19 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 @Override
                 public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
                     iv_start_stop.setEnabled(true);
-                    pushLocalData();
+                    pushLocalData(mMediaFile == null ? "" : mMediaFile.getRecordPath());
                     System.out.println("ccccccc " + mMediaFile.getRecordPath() + ":" + new File(mMediaFile.getRecordPath()).exists() + ":" + new File(mMediaFile.getRecordPath()).length());
                     if (mMediaFile != null) {
                         mMediaFile = null;
                     }
-
+                    closeMedia();
                     stopTime();
                     startPreviewVideo(false);
                 }
 
                 @Override
                 public void onError(ErrorInfo errorInfo) {
+                    closeMedia();
                     iv_start_stop.setEnabled(true);
                 }
             });
@@ -588,10 +593,10 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         return false;
     }
 
-    public void pushLocalData() {
+    public void pushLocalData(String str) {
         int netStatus = AppUtils.getNetWorkStatus(getContext());
         if (netStatus == 0) {
-            File recordFile = new File(mMediaFile.getRecordPath());
+            File recordFile = new File(str);
             EventBus.getDefault().post(new FileUpload(recordFile.getName(), recordFile));
         }
     }

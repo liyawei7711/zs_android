@@ -263,12 +263,7 @@ public class AuthApi {
                 .addParam("time", AppUtils.getTime(System.currentTimeMillis()))
                 .addParam("deviceId", AppUtils.getIMEIResult(context))
                 .addParam("electricityQuantity", battery + "")
-                .setHttpCallback(new ModelCallback<String>() {
-                    @Override
-                    public void onSuccess(String s) {
-
-                    }
-                })
+                .setHttpCallback(null)
                 .build()
                 .requestNowAsync();
     }
@@ -306,12 +301,7 @@ public class AuthApi {
                 .requestNowAsync();
     }
 
-    public void changeCapture(Context context, String url, boolean isCapture, AnJianBean bean) {
-        if (isCapture) {
-            startUsDevice(context, bean);
-        } else {
-            startUnUsDevice(context);
-        }
+    public void changeCapture(Context context, String url, final boolean isCapture, AnJianBean bean) {
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
                 .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("userId", AppAuth.get().getUserID())
@@ -321,10 +311,24 @@ public class AuthApi {
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
+                        System.out.println("ccccccccccccccccccccccccccc captureState:onSuccess："+(isCapture ? 1 : 0));
+                    }
+
+                    @Override
+                    public void onFailure(HTTPResponse httpResponse) {
+                        super.onFailure(httpResponse);
+                        System.out.println("ccccccccccccccccccccccccccc captureState:onFailure："+(isCapture ? 1 : 0));
                     }
                 })
                 .build()
                 .requestNowAsync();
+
+        if (isCapture) {
+            startUsDevice(context, bean);
+        } else {
+            startUnUsDevice(context);
+        }
+
     }
 
     /**

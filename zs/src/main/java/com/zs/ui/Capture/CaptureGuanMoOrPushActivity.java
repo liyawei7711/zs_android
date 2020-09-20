@@ -3,15 +3,21 @@ package com.zs.ui.Capture;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import com.baidu.location.BDLocation;
 import com.google.gson.Gson;
 import com.huaiye.cmf.sdp.SdpMessageCmStartSessionRsp;
+import com.huaiye.sdk.HYClient;
+import com.huaiye.sdk.core.SdkCallback;
+import com.huaiye.sdk.sdkabi._api.ApiAuth;
+import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
+import com.huaiye.sdk.sdpmsgs.auth.CUserRegisterRsp;
 import com.huaiye.sdk.sdpmsgs.social.SendUserBean;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
@@ -21,9 +27,13 @@ import com.zs.bus.KeyCodeEvent;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
+import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.StopCaptureMessage;
+import com.zs.models.ModelCallback;
+import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.AnJianBean;
+import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.home.view.CaptureViewLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -31,6 +41,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+
+import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 @BindLayout(R.layout.activity_capture)
 public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
@@ -81,7 +93,23 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
             userList = (ArrayList<SendUserBean>) getIntent().getSerializableExtra("userList");
         }
 
+        AppAuth.get().put("strTokenHY", "");
+        if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+            AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+                @Override
+                public void onSuccess(AuthUser authUser) {
+                    captureView.startPreviewVideo(false);
+                }
+
+                @Override
+                public void onFailure(HTTPResponse httpResponse) {
+                    super.onFailure(httpResponse);
+                    captureView.startPreviewVideo(false);
+                }
+            });
+        }
         captureView.startPreviewVideo(false);
+
         changeAnJian();
     }
 
@@ -90,7 +118,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CODE_CAPTURE) {
-                captureView.pushLocalData();
+                captureView.pushLocalData(captureView.mMediaFile == null ? "" : captureView.mMediaFile.getRecordPath());
                 captureView.startPreviewVideo(false);
             } else {
                 changeAnJian();

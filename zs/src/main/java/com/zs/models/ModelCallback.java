@@ -3,21 +3,14 @@ package com.zs.models;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.huaiye.sdk.HYClient;
+import com.zs.common.AppUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import com.zs.MCApp;
-import com.zs.R;
-import com.zs.common.AppUtils;
-import com.zs.ui.auth.LoginActivity;
 import ttyy.com.jinnetwork.core.callback.HTTPUIThreadCallbackAdapter;
 import ttyy.com.jinnetwork.core.work.HTTPRequest;
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
-import ttyy.com.jinnetwork.core.async.HttpExecutorPool;
-
-import static com.zs.common.AppUtils.ctx;
 
 /**
  * author: admin
@@ -56,9 +49,9 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
             httpRequest.cancel();
             return;
         }
-        Log.i("MCApp", "resp url -> " + httpRequest.getRequestURL());
-        Log.i("MCApp", "resp params -> " + gson.toJson(httpRequest.getParams()));
-        Log.i("MCApp", "resp header -> " + gson.toJson(httpRequest.getHeaders()));
+//        Log.i("MCApp", "resp url -> " + httpRequest.getRequestURL());
+        Log.i("MCApp", "resp params -> " + httpRequest.getRequestURL() + ":::" + gson.toJson(httpRequest.getParams()));
+//        Log.i("MCApp", "resp header -> " + gson.toJson(httpRequest.getHeaders()));
     }
 
     @Override
@@ -69,7 +62,7 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
     @Override
     public final void onSuccess(HTTPResponse httpResponse) {
         String str = httpResponse.getContentToString();
-        Log.i("MCApp", "resp -> " + str);
+        Log.i("MCApp", "resp -> " + httpResponse.getHttpRequest().getRequestURL() + ":::" + str);
 
 //        if (response.code == 3) {
 //            HttpExecutorPool.get().getDefaultExecutor().clearAllReq();
@@ -84,7 +77,7 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
 
     @Override
     public void onFailure(HTTPResponse httpResponse) {
-        if(httpResponse != null) {
+        if (httpResponse != null) {
             Log.i("MCApp", "onFailure " + httpResponse.getErrorMessage());
         }
         onFinish(null);
@@ -98,7 +91,8 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
     /**
      * 用户被业务服务器踢掉了
      */
-    public void onUserOffline(){}
+    public void onUserOffline() {
+    }
 
     public abstract void onSuccess(T t);
 
