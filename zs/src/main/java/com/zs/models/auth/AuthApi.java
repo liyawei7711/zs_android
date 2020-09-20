@@ -302,6 +302,7 @@ public class AuthApi {
     }
 
     public void changeCapture(Context context, String url, final boolean isCapture, AnJianBean bean) {
+
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
                 .addHeader("Authorization", AppAuth.get().getToken())
                 .addParam("userId", AppAuth.get().getUserID())
@@ -537,7 +538,6 @@ public class AuthApi {
                        final IUploadProgress progress) {
         UploadModelBean bean = new UploadModelBean(tag);
 
-        System.out.println("ccccccccccccccccccccccc start " +tag.file.getName());
         OkHttpClient Client = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)

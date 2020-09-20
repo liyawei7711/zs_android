@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
 import com.zs.dao.MediaFileDaoUtils;
+import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.ui.local.bean.FileUpload;
@@ -26,6 +28,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.zs.common.AppUtils.showToast;
 
 
 /**
@@ -83,12 +87,25 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                     public void onClick(View v) {
                         FileUpload bean = (FileUpload) v.getTag();
                         if (v.getId() == R.id.iv_upload) {
+                            int netStatus = AppUtils.getNetWorkStatus(getContext());
+                            if (netStatus == -1) {
+                                showToast("当前无网络");
+                                return;
+                            }
+                            if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                                showToast("当前未登录");
+                                return;
+                            }
                             AuthApi.get().upload(bean, new ModelCallback<String>() {
                                 @Override
                                 public void onSuccess(String upload) {
                                 }
                             }, iUploadProgress);
                         } else {
+                            if(bean.isUpload == 1) {
+                                showToast("文件正在上传");
+                                return;
+                            }
                             Intent intent = new Intent(getActivity(), ImageShowActivity.class);
                             intent.putExtra("imageUrl", bean.file.getAbsolutePath());
                             getActivity().startActivity(intent);

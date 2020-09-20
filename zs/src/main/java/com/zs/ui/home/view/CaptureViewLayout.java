@@ -377,7 +377,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             // 无网络
             HYClient.getSdkOptions().Capture().setCaptureOfflineMode(true);
         } else {
-            System.out.println("cccccccccccccccccccccccccccc has wifi ");
+            System.out.println("cccccccccccccccccccccccccccc has wifi :"+AppAuth.get().getTokenHY());
             if (TextUtils.isEmpty(AppAuth.get().getTokenHY())) {
                 HYClient.getSdkOptions().Capture().setCaptureOfflineMode(true);
             } else {
@@ -432,6 +432,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 new Capture.Callback() {
                     @Override
                     public void onRepeatCapture() {
+                        System.out.println("cccccccccccccccccccccccccccc startCapture onRepeatCapture");
                         captureStatus = CAPTURE_STATUS_CAPTURING;
                         view_cover.setVisibility(GONE);
                         sendPlayerMessage(null);
@@ -440,6 +441,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
                     @Override
                     public void onSuccess(CStartMobileCaptureRsp resp) {
+                        System.out.println("cccccccccccccccccccccccccccc startCapture onSuccess");
                         iv_start_stop.setEnabled(true);
                         view_cover.setVisibility(GONE);
                         captureStatus = CAPTURE_STATUS_CAPTURING;
@@ -456,6 +458,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
                     @Override
                     public void onError(ErrorInfo error) {
+                        System.out.println("cccccccccccccccccccccccccccc startCapture onError:"+error.toString());
                         iv_start_stop.setEnabled(true);
                         if (!AppUtils.isVideo && !AppUtils.isMeet && getVisibility() != GONE) {
                             ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.capture_false));

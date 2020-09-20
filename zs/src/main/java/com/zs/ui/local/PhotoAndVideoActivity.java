@@ -1,13 +1,14 @@
 package com.zs.ui.local;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.RadioGroup;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
-import android.view.View;
-import android.widget.RadioGroup;
 
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
@@ -15,15 +16,15 @@ import com.zs.R;
 import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
-import com.zs.dao.MediaFileDaoUtils;
-import com.zs.ui.local.MediaLocalImageFragment;
-import com.zs.ui.local.MediaLocalVideoFragment;
+import com.zs.dao.auth.AppAuth;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.zs.common.AppUtils.showToast;
 
 /**
  * author: admin
@@ -77,11 +78,20 @@ public class PhotoAndVideoActivity extends AppBaseActivity {
         tv_upload_all.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(currentFragment != null) {
-                    if(currentFragment instanceof MediaLocalImageFragment) {
-                        ((MediaLocalImageFragment)currentFragment).upLoadAll();
-                    } else if(currentFragment instanceof MediaLocalVideoFragment){
-                        ((MediaLocalVideoFragment)currentFragment).upLoadAll();
+                int netStatus = AppUtils.getNetWorkStatus(PhotoAndVideoActivity.this);
+                if (netStatus == -1) {
+                    showToast("当前无网络");
+                    return;
+                }
+                if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                    showToast("当前未登录");
+                    return;
+                }
+                if (currentFragment != null) {
+                    if (currentFragment instanceof MediaLocalImageFragment) {
+                        ((MediaLocalImageFragment) currentFragment).upLoadAll();
+                    } else if (currentFragment instanceof MediaLocalVideoFragment) {
+                        ((MediaLocalVideoFragment) currentFragment).upLoadAll();
                     }
                 }
             }
@@ -93,6 +103,9 @@ public class PhotoAndVideoActivity extends AppBaseActivity {
     public void onEvent(NetChange bean) {
         int netStatus = AppUtils.getNetWorkStatus(this);
         if (netStatus == 0) {
+            if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                return;
+            }
             imageFragment.upLoadAll();
             videoFragment.upLoadAll();
         }
