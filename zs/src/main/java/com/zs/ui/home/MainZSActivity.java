@@ -20,8 +20,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.baidu.location.BDLocation;
 import com.huaiye.sdk.HYClient;
+import com.huaiye.sdk.core.SdkCallback;
 import com.huaiye.sdk.logger.Logger;
 import com.huaiye.sdk.sdkabi._api.ApiAuth;
+import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.route.BindExtra;
@@ -266,13 +268,22 @@ public class MainZSActivity extends AppBaseActivity {
     }
 
     private void startCapture() {
-        HYClient.getHYCapture().stopCapture(null);
+        HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+            @Override
+            public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+            }
+
+            @Override
+            public void onError(ErrorInfo errorInfo) {
+            }
+        });
         rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
             @Override
             public void onMainDelay() {
                 startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
             }
         });
+
     }
 
     @Override

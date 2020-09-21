@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.huaiye.sdk.HYClient;
+import com.huaiye.sdk.core.SdkCallback;
+import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.qrcode.scanner.QRCodeScannerView;
 import com.qrcode.scanner.ScannerRectView;
 import com.qrcode.scanner.decode.DecodeCallback;
@@ -241,7 +243,17 @@ public class LoginActivity extends AppBaseActivity {
         AppUtils.isMeet = false;
         AppUtils.isTalk = false;
         AppUtils.isVideo = false;
-        HYClient.getHYCapture().stopCapture(null);
+        HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+            @Override
+            public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+
+            }
+
+            @Override
+            public void onError(ErrorInfo errorInfo) {
+
+            }
+        });
         setResult(RESULT_OK);
         finish();
 //        startActivity(new Intent(this, MainZSActivity.class));

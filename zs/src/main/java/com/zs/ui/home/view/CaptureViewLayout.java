@@ -602,7 +602,17 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             int netStatus = AppUtils.getNetWorkStatus(getContext());
             boolean notNet = false;
             if (netStatus == -1) {
-                HYClient.getHYCapture().stopCapture(null);
+                HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+                    @Override
+                    public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+
+                    }
+
+                    @Override
+                    public void onError(ErrorInfo errorInfo) {
+
+                    }
+                });
                 closeMedia();
                 iv_start_stop.setImageResource(R.drawable.zs_start_bg);
                 AppUtils.isCaptureLayoutShowing = false;

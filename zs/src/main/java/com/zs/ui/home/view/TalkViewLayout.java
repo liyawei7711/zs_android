@@ -54,6 +54,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.concurrent.TimeUnit;
 
+import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.AcceptDiaoDu;
@@ -249,7 +250,17 @@ public class TalkViewLayout extends FrameLayout implements View.OnClickListener 
                 .setTalkId(nTalkID)
                 .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT);
         if (!AppUtils.isCaptureLayoutShowing) {
-            HYClient.getHYCapture().stopCapture(null);
+            HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+                @Override
+                public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+
+                }
+
+                @Override
+                public void onError(ErrorInfo errorInfo) {
+
+                }
+            });
         } else {
             paramsJoinTalk
                     .setMediaMode(SdkBaseParams.MediaMode.AudioAndVideo)
@@ -362,7 +373,17 @@ public class TalkViewLayout extends FrameLayout implements View.OnClickListener 
                 .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
                 .addInvitedUserInfo(toUser);
         if (!AppUtils.isCaptureLayoutShowing) {
-            HYClient.getHYCapture().stopCapture(null);
+            HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+                @Override
+                public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+
+                }
+
+                @Override
+                public void onError(ErrorInfo errorInfo) {
+
+                }
+            });
         } else {
             paramsStartTalk
                     .setSelfMediaMode(SdkBaseParams.MediaMode.AudioAndVideo)

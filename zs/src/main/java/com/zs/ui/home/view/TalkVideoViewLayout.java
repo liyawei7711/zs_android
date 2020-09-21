@@ -58,6 +58,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.concurrent.TimeUnit;
 
+import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.AcceptDiaoDu;
@@ -345,7 +346,17 @@ public class TalkVideoViewLayout extends FrameLayout implements View.OnClickList
         tv_waite.setVisibility(VISIBLE);
 
         resetCaptureSize();
-        HYClient.getHYCapture().stopCapture(null);
+        HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
+            @Override
+            public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+
+            }
+
+            @Override
+            public void onError(ErrorInfo errorInfo) {
+
+            }
+        });
         HYClient.getHYCapture().setCameraConferenceMode(HYCapture.CameraConferenceMode.PORTRAIT);
 
         if (strExtParams.contains("sos")){
