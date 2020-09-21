@@ -193,10 +193,13 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
         parent = parentIntf;
     }
 
-    public void upLoadAll() {
+    public void upLoadAll(boolean isAuto) {
         for (FileUpload tmp : datas) {
             if (tmp.isUpload == 0 ||
                     tmp.isUpload == 2) {
+                if(isAuto && tmp.file.getName().contains("__")) {
+                    break;
+                }
                 AuthApi.get().upload(tmp, new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String upload) {

@@ -187,7 +187,16 @@ public class WebJSActivity extends AppBaseActivity {
 
         //与js交互时用到的方法
         @JavascriptInterface
+        public void correlateInfo() {
+            System.out.println("cccccccccccccccccccccccccc correlateInfo()");
+            AppAuth.get().put("AnJianBean", "");
+            showToast("取消关联");
+        }
+
+        //与js交互时用到的方法
+        @JavascriptInterface
         public void correlateInfo(String str) {
+            showToast("关联案件");
             System.out.println("cccccccccccccccccccccccccc correlateInfo:" + str);
             try{
                 if(fromCapture) {

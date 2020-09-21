@@ -49,6 +49,14 @@ public class AppConstants {
         SP.setParam("IP", strAddress);
         SP.setParam("Port", nPort);
     }
+    public static void setSieAddress(String ip, String port) {
+        strSieAddress = ip;
+        strSiePort = port;
+    }
+    public static void setSiePlayerAddress(String ip, String port) {
+        strSiePlayerAddress = ip;
+        strSiePlayerSiePort = port;
+    }
 
 
     public static String getSieAddress() {

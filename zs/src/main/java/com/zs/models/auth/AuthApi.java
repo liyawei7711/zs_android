@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
-import androidx.annotation.RequiresApi;
-
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+
+import androidx.annotation.RequiresApi;
 
 import com.baidu.location.BDLocation;
 import com.google.gson.Gson;
@@ -27,7 +27,6 @@ import com.zs.common.AppUtils;
 import com.zs.common.ErrorMsg;
 import com.zs.common.SP;
 import com.zs.common.dialog.LogicDialog;
-import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.rx.RxUtils;
 import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
@@ -164,14 +163,14 @@ public class AuthApi {
                         .setUserName(account), new SdkCallback<CUserRegisterRsp>() {
                     @Override
                     public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
-                        System.out.println("ccccccccccccccccccccc onSuccess:"+cUserRegisterRsp.strUserTokenID);
+                        System.out.println("ccccccccccccccccccccc onSuccess:" + cUserRegisterRsp.strUserTokenID);
                         AppAuth.get().put("strTokenHY", cUserRegisterRsp.strUserTokenID);
                         successDeal(callback, null, cUserRegisterRsp);
                     }
 
                     @Override
                     public void onError(final ErrorInfo errorInfo) {
-                        System.out.println("ccccccccccccccccccccc onError:"+errorInfo.toString());
+                        System.out.println("ccccccccccccccccccccc onError:" + errorInfo.toString());
                         errorDeal(errorInfo, callback);
                     }
                 });
@@ -242,7 +241,7 @@ public class AuthApi {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void pushGPS(Context context, BDLocation location) {
-        if(TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+        if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
             return;
         }
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
@@ -312,13 +311,13 @@ public class AuthApi {
                 .setHttpCallback(new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String s) {
-                        System.out.println("ccccccccccccccccccccccccccc captureState:onSuccess："+(isCapture ? 1 : 0));
+                        System.out.println("ccccccccccccccccccccccccccc captureState:onSuccess：" + (isCapture ? 1 : 0));
                     }
 
                     @Override
                     public void onFailure(HTTPResponse httpResponse) {
                         super.onFailure(httpResponse);
-                        System.out.println("ccccccccccccccccccccccccccc captureState:onFailure："+(isCapture ? 1 : 0));
+                        System.out.println("ccccccccccccccccccccccccccc captureState:onFailure：" + (isCapture ? 1 : 0));
                     }
                 })
                 .build()
@@ -364,7 +363,7 @@ public class AuthApi {
         String strOSDCommand = "drawtext=fontfile="
                 + HYClient.getSdkOptions().Capture().getOSDFontFile()
                 + ":fontcolor=white:x=0:y=0:fontsize=26:box=1:boxcolor=black:alpha=0.8:text=' "
-                + AppAuth.get().getUserName()
+//                + AppAuth.get().getUserName()
                 + "'";
         // OSD名称初始化
         HYClient.getSdkOptions().Capture().setOSDCustomCommand(strOSDCommand);
@@ -537,7 +536,7 @@ public class AuthApi {
                        final ModelCallback<String> callback,
                        final IUploadProgress progress) {
         UploadModelBean bean = new UploadModelBean(tag);
-
+        System.out.println("resp pre cccccccccc " + new Gson().toJson(bean));
         OkHttpClient Client = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -572,7 +571,7 @@ public class AuthApi {
 
                                     @Override
                                     public void doOnMain(Object data) {
-                                        if(progress != null) {
+                                        if (progress != null) {
                                             progress.onProgress(tag, "553");
                                         }
                                     }
@@ -592,6 +591,7 @@ public class AuthApi {
             @Override
             public void onFailure(Call call, IOException e) {
                 try {
+                    System.out.println("resp pre onFailure " + e);
                     tag.remainingBytes = 100;
                     tag.totalBytes = 100;
                     tag.isUpload = 2;
@@ -605,6 +605,7 @@ public class AuthApi {
             public void onResponse(Call call, Response response) throws IOException {
                 try {
                     String strResp = response.body().string();
+                    System.out.println("resp pre onResponse " + strResp);
                     tag.remainingBytes = 100;
                     tag.totalBytes = 100;
                     tag.isUpload = 3;
@@ -620,8 +621,8 @@ public class AuthApi {
 
                     @Override
                     public void doOnMain(Object data) {
-                        if(progress != null) {
-                            System.out.println("ccccccccccccccccccccccc start success " +tag.file.getName());
+                        if (progress != null) {
+                            System.out.println("ccccccccccccccccccccccc start success " + tag.file.getName());
                             progress.onProgress(tag, "603");
                         }
                     }

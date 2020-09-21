@@ -7,6 +7,7 @@ import com.zs.MCApp;
 import com.zs.R;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
+import com.zs.dao.auth.AppAuth;
 import com.zs.ui.local.bean.FileUpload;
 
 import java.io.File;
@@ -57,13 +58,16 @@ public class MediaFileDaoUtils {
         String currentFileName = "";
         if (MCApp.getInstance().guanMoOrPushActivity != null) {
             try {
-                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaFile.getRecordPath();
-                if(!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaMP4File.getRecordPath();
+                if (!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
                     currentFileName = "";
                 }
             } catch (Exception e) {
             }
         }
+
+        String name = "_" + AppAuth.get().getUserLoginName() + "_";
+
         ArrayList<FileUpload> datas = new ArrayList<>();
         String saveVideo = SP.getString(STRING_KEY_save_video);
         StringBuilder sb = new StringBuilder();
@@ -78,7 +82,49 @@ public class MediaFileDaoUtils {
                     break;
                 }
             }
-            datas.add(fileUpload);
+            if (fileUpload.file.getName().contains(name) ||
+                    fileUpload.file.getName().contains("__")) {
+                datas.add(fileUpload);
+            }
+            if (saveVideo.contains(temp.getName())) {
+                sb.append(temp.getName());
+            }
+        }
+        SP.putString(STRING_KEY_save_video, sb.toString());
+        return datas;
+    }
+
+    public ArrayList<FileUpload> getAllVideosAuto() {
+        String currentFileName = "";
+        if (MCApp.getInstance().guanMoOrPushActivity != null) {
+            try {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaMP4File.getRecordPath();
+                if (!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                    currentFileName = "";
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        String name = "_" + AppAuth.get().getUserLoginName() + "_";
+
+        ArrayList<FileUpload> datas = new ArrayList<>();
+        String saveVideo = SP.getString(STRING_KEY_save_video);
+        StringBuilder sb = new StringBuilder();
+        for (File temp : mVideoDir.listFiles()) {
+            FileUpload fileUpload = new FileUpload(temp.getName(), temp);
+            if (fileUpload.isUpload == 3) {
+                fileUpload.file.delete();
+                break;
+            }
+            if (!TextUtils.isEmpty(currentFileName)) {
+                if (temp.getName().equals(new File(currentFileName).getName())) {
+                    break;
+                }
+            }
+            if (fileUpload.file.getName().contains(name)) {
+                datas.add(fileUpload);
+            }
             if (saveVideo.contains(temp.getName())) {
                 sb.append(temp.getName());
             }
@@ -91,13 +137,16 @@ public class MediaFileDaoUtils {
         String currentFileName = "";
         if (MCApp.getInstance().guanMoOrPushActivity != null) {
             try {
-                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaFile.getRecordPath();
-                if(!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaImgFile.getRecordPath();
+                if (!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
                     currentFileName = "";
                 }
             } catch (Exception e) {
             }
         }
+
+        String name = "_" + AppAuth.get().getUserLoginName() + "_";
+
         ArrayList<FileUpload> datas = new ArrayList<>();
         String saveImg = SP.getString(STRING_KEY_save_photo);
         StringBuilder sb = new StringBuilder();
@@ -112,7 +161,49 @@ public class MediaFileDaoUtils {
                     break;
                 }
             }
-            datas.add(fileUpload);
+            if (fileUpload.file.getName().contains(name) ||
+                    fileUpload.file.getName().contains("__")) {
+                datas.add(fileUpload);
+            }
+            if (saveImg.contains(temp.getName())) {
+                sb.append(temp.getName());
+            }
+        }
+        SP.putString(STRING_KEY_save_photo, sb.toString());
+        return datas;
+    }
+
+    public ArrayList<FileUpload> getAllImgsAuto() {
+        String currentFileName = "";
+        if (MCApp.getInstance().guanMoOrPushActivity != null) {
+            try {
+                currentFileName = MCApp.getInstance().guanMoOrPushActivity.captureView.mMediaImgFile.getRecordPath();
+                if (!MCApp.getInstance().guanMoOrPushActivity.captureView.isStart) {
+                    currentFileName = "";
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        String name = "_" + AppAuth.get().getUserLoginName() + "_";
+
+        ArrayList<FileUpload> datas = new ArrayList<>();
+        String saveImg = SP.getString(STRING_KEY_save_photo);
+        StringBuilder sb = new StringBuilder();
+        for (File temp : mImageDir.listFiles()) {
+            FileUpload fileUpload = new FileUpload(temp.getName(), temp);
+            if (fileUpload.isUpload == 3) {
+                fileUpload.file.delete();
+                break;
+            }
+            if (!TextUtils.isEmpty(currentFileName)) {
+                if (temp.getName().equals(new File(currentFileName).getName())) {
+                    break;
+                }
+            }
+            if (fileUpload.file.getName().contains(name)) {
+                datas.add(fileUpload);
+            }
             if (saveImg.contains(temp.getName())) {
                 sb.append(temp.getName());
             }
@@ -168,9 +259,11 @@ public class MediaFileDaoUtils {
         }
 
         public String getRecordName() {
+            String name = "_" + AppAuth.get().getUserLoginName() + "_";
             StringBuilder fileName = new StringBuilder();
             fileName.append(getDateDetail().replace(" ", "_").replaceAll(":", "-"));
 //                    .append("_android");
+            fileName.append(name);
             if (nMediaType == 0) {
                 // 图片
                 // yyyy-MM-dd_HH:mm:ss_android_image.jpg

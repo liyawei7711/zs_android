@@ -20,10 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.baidu.location.BDLocation;
 import com.huaiye.sdk.HYClient;
-import com.huaiye.sdk.core.SdkCallback;
 import com.huaiye.sdk.logger.Logger;
 import com.huaiye.sdk.sdkabi._api.ApiAuth;
-import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.route.BindExtra;
@@ -33,7 +31,9 @@ import com.zs.bus.KeyCodeEvent;
 import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
+import com.zs.common.SP;
 import com.zs.common.recycle.LiteBaseAdapter;
+import com.zs.common.rx.RxUtils;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.CaptureMessage;
@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 import static android.view.View.GONE;
+import static com.zs.common.AppUtils.STRING_KEY_4G_auto;
 import static com.zs.common.AppUtils.ctx;
 
 /**
@@ -109,6 +110,7 @@ public class MainZSActivity extends AppBaseActivity {
     // 60秒时间不点击屏幕，屏幕变暗
     private long delayTime = 6 * 1000L;
     boolean isShow;
+    RxUtils rxUtils;
 
     @Override
     protected void onResume() {
@@ -158,6 +160,7 @@ public class MainZSActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
+        rxUtils = new RxUtils();
         ModelApis.Auth().getServiceConfig(new ModelCallback<ConfigResult>() {
             @Override
             public void onSuccess(ConfigResult changePwd) {
@@ -199,17 +202,7 @@ public class MainZSActivity extends AppBaseActivity {
                         MainZSMenuBean bean = (MainZSMenuBean) v.getTag();
                         switch (bean.code) {
                             case 1:
-                                HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
-                                    @Override
-                                    public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
-                                        startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
-                                    }
-
-                                    @Override
-                                    public void onError(ErrorInfo errorInfo) {
-
-                                    }
-                                });
+                                startCapture();
                                 break;
                             case 2:
 //                                MediaFileDaoUtils.get().clear();
@@ -227,6 +220,15 @@ public class MainZSActivity extends AppBaseActivity {
                                 startActivity(new Intent(MainZSActivity.this, ZSSettingActivity.class));
                                 break;
                             case 5:
+                                int netStatus = AppUtils.getNetWorkStatus(MainZSActivity.this);
+                                if (netStatus == -1) {
+                                    showToast("当前无网络");
+                                    return;
+                                }
+                                if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                                    showToast("当前未登录");
+                                    return;
+                                }
                                 startActivity(new Intent(MainZSActivity.this, WebJSActivity.class));
                                 break;
                             case 6:
@@ -261,6 +263,16 @@ public class MainZSActivity extends AppBaseActivity {
         rv_data.setLayoutManager(new GridLayoutManager(this, 2));
         rv_data.setAdapter(adapter);
 
+    }
+
+    private void startCapture() {
+        HYClient.getHYCapture().stopCapture(null);
+        rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
+            @Override
+            public void onMainDelay() {
+                startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+            }
+        });
     }
 
     @Override
@@ -356,9 +368,9 @@ public class MainZSActivity extends AppBaseActivity {
             return;
         }
         if (bean.action.equals("zzx_action_record")) {
-            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+            startCapture();
         } else if (bean.action.equals("zzx_action_capture")) {
-            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
+            startCapture();
         } else if (bean.action.equals("zzx_action_mic")) {
 
         }
@@ -374,13 +386,24 @@ public class MainZSActivity extends AppBaseActivity {
 //        }
         int netStatus = AppUtils.getNetWorkStatus(this);
         if (netStatus == 0) {
-            ArrayList<FileUpload> videos = MediaFileDaoUtils.get().getAllVideos();
-            ArrayList<FileUpload> images = MediaFileDaoUtils.get().getAllImgs();
+            ArrayList<FileUpload> videos = MediaFileDaoUtils.get().getAllVideosAuto();
+            ArrayList<FileUpload> images = MediaFileDaoUtils.get().getAllImgsAuto();
             for (FileUpload temp : videos) {
                 onEvent(temp);
             }
             for (FileUpload temp : images) {
                 onEvent(temp);
+            }
+        } else if (netStatus == 1) {
+            if (SP.getBoolean(STRING_KEY_4G_auto, false)) {
+                ArrayList<FileUpload> videos = MediaFileDaoUtils.get().getAllVideosAuto();
+                ArrayList<FileUpload> images = MediaFileDaoUtils.get().getAllImgsAuto();
+                for (FileUpload temp : videos) {
+                    onEvent(temp);
+                }
+                for (FileUpload temp : images) {
+                    onEvent(temp);
+                }
             }
         }
     }
@@ -401,10 +424,15 @@ public class MainZSActivity extends AppBaseActivity {
             }
         }, new IUploadProgress() {
             @Override
-            public void onProgress(FileUpload bean, String from) {
+            public void onProgress(final FileUpload bean, String from) {
                 if (bean.isUpload == 3) {
-                    System.out.println("ccccccccccccccccccccccc success");
-                    bean.file.delete();
+                    rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
+                        @Override
+                        public void onMainDelay() {
+                            System.out.println("resp pre onResponse success delete " + bean.file);
+                            bean.file.delete();
+                        }
+                    });
                 }
             }
         });

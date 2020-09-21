@@ -107,16 +107,25 @@ public class ShiPinActivity extends AppBaseActivity {
                         tv_fenbianlv_di.setCompoundDrawables(null, null, drawable, null);
                         tv_fenbianlv_middle.setCompoundDrawables(null, null, null, null);
                         tv_fenbianlv_high.setCompoundDrawables(null, null, null, null);
+                        HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+                                HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.VGA)
+                        );
                         break;
                     case STRING_KEY_HD720P:
                         tv_fenbianlv_di.setCompoundDrawables(null, null, null, null);
                         tv_fenbianlv_middle.setCompoundDrawables(null, null, drawable, null);
                         tv_fenbianlv_high.setCompoundDrawables(null, null, null, null);
+                        HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+                                HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HDVGA)
+                        );
                         break;
                     case STRING_KEY_HD1080P:
                         tv_fenbianlv_di.setCompoundDrawables(null, null, null, null);
                         tv_fenbianlv_middle.setCompoundDrawables(null, null, null, null);
                         tv_fenbianlv_high.setCompoundDrawables(null, null, drawable, null);
+                        HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+                                HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HD1080P)
+                        );
                         break;
                 }
 
@@ -172,6 +181,10 @@ public class ShiPinActivity extends AppBaseActivity {
             R.id.tv_zhenlv_middle,
             R.id.tv_zhenlv_high})
     void onViewClicked(View view) {
+        if(type == 0) {
+            showToast("设置无效，图片尺寸跟随采集尺寸。");
+            return;
+        }
         switch (view.getId()) {
             case R.id.tv_fenbianlv_di:
                 changeFenBianLv(1);

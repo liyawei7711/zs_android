@@ -13,21 +13,16 @@ import androidx.annotation.RequiresApi;
 import com.baidu.location.BDLocation;
 import com.google.gson.Gson;
 import com.huaiye.cmf.sdp.SdpMessageCmStartSessionRsp;
-import com.huaiye.sdk.HYClient;
-import com.huaiye.sdk.core.SdkCallback;
-import com.huaiye.sdk.sdkabi._api.ApiAuth;
-import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
-import com.huaiye.sdk.sdpmsgs.auth.CUserRegisterRsp;
 import com.huaiye.sdk.sdpmsgs.social.SendUserBean;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.KeyCodeEvent;
+import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
-import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.StopCaptureMessage;
 import com.zs.models.ModelCallback;
@@ -46,7 +41,7 @@ import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 @BindLayout(R.layout.activity_capture)
 public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
-    public static final int REQUEST_CODE_CAPTURE = 0x02;//点击拍照标识
+    boolean isOffline = false;
 
     @BindView(R.id.capture_view)
     public CaptureViewLayout captureView;
@@ -93,22 +88,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
             userList = (ArrayList<SendUserBean>) getIntent().getSerializableExtra("userList");
         }
 
-        AppAuth.get().put("strTokenHY", "");
-        if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
-            AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
-                @Override
-                public void onSuccess(AuthUser authUser) {
-                    captureView.startPreviewVideo(false);
-                }
-
-                @Override
-                public void onFailure(HTTPResponse httpResponse) {
-                    super.onFailure(httpResponse);
-                    captureView.startPreviewVideo(false);
-                }
-            });
-        }
-        captureView.startPreviewVideo(false);
+        startPre();
 
         changeAnJian();
     }
@@ -117,12 +97,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_CODE_CAPTURE) {
-                captureView.pushLocalData(captureView.mMediaFile == null ? "" : captureView.mMediaFile.getRecordPath());
-                captureView.startPreviewVideo(false);
-            } else {
-                changeAnJian();
-            }
+            changeAnJian();
         }
     }
 
@@ -134,11 +109,70 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 
     }
 
+    private void startPre() {
+        int netStatus = AppUtils.getNetWorkStatus(this);
+        if (netStatus == -1) {
+            isOffline = true;
+            captureView.startPreviewVideo(false);
+        } else {
+            isOffline = false;
+            AppAuth.get().put("strTokenHY", "");
+            if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+                    @Override
+                    public void onSuccess(AuthUser authUser) {
+                        captureView.startPreviewVideo(false);
+                    }
+
+                    @Override
+                    public void onFailure(HTTPResponse httpResponse) {
+                        super.onFailure(httpResponse);
+                        captureView.startPreviewVideo(false);
+                    }
+                });
+            } else {
+                captureView.startPreviewVideo(false);
+            }
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(BDLocation location) {
         if (captureView != null) {
             captureView.toggleShuiYin(location);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(NetChange bean) {
+        int netStatus = AppUtils.getNetWorkStatus(this);
+        boolean notNet = false;
+        if (netStatus == -1) {
+            notNet = true;
+        } else {
+            notNet = false;
+        }
+        if (isOffline == notNet) {
+        } else {
+            if (isOffline) { //变动前无网络
+                //现在有网络
+                AppAuth.get().put("strTokenHY", "");
+                if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                    AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+                        @Override
+                        public void onSuccess(AuthUser authUser) {
+                        }
+                    });
+                }
+            } else {//变动前有网络
+                //现在无网络
+                showToast("网络断开，正在录像切换");
+                if(!captureView.onBackPressed(false, false)) {
+                    super.onBackPressed();
+                }
+            }
+            isOffline = notNet;
         }
     }
 
@@ -153,13 +187,12 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
                 captureView.iv_take_photo.performClick();
             }
         } else if (bean.action.equals("zzx_action_mic")) {
-
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (captureView.onBackPressed()) {
+        if (captureView.onBackPressed(true, false)) {
 
         } else {
             super.onBackPressed();

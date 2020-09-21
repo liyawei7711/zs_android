@@ -16,14 +16,19 @@ import com.zs.R;
 import com.zs.bus.NetChange;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
+import com.zs.common.SP;
 import com.zs.dao.auth.AppAuth;
+import com.zs.ui.local.bean.FileUpload;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.zs.common.AppUtils.STRING_KEY_4G_auto;
 import static com.zs.common.AppUtils.showToast;
 
 /**
@@ -89,9 +94,9 @@ public class PhotoAndVideoActivity extends AppBaseActivity {
                 }
                 if (currentFragment != null) {
                     if (currentFragment instanceof MediaLocalImageFragment) {
-                        ((MediaLocalImageFragment) currentFragment).upLoadAll();
+                        ((MediaLocalImageFragment) currentFragment).upLoadAll(false);
                     } else if (currentFragment instanceof MediaLocalVideoFragment) {
-                        ((MediaLocalVideoFragment) currentFragment).upLoadAll();
+                        ((MediaLocalVideoFragment) currentFragment).upLoadAll(false);
                     }
                 }
             }
@@ -106,8 +111,16 @@ public class PhotoAndVideoActivity extends AppBaseActivity {
             if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
                 return;
             }
-            imageFragment.upLoadAll();
-            videoFragment.upLoadAll();
+            imageFragment.upLoadAll(true);
+            videoFragment.upLoadAll(true);
+        } else if (netStatus == 1) {
+            if (SP.getBoolean(STRING_KEY_4G_auto, false)) {
+                if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                    return;
+                }
+                imageFragment.upLoadAll(true);
+                videoFragment.upLoadAll(true);
+            }
         }
     }
 

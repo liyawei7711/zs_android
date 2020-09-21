@@ -2,10 +2,6 @@ package com.zs.ui.local;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,18 +9,14 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.huaiye.cmf.sdp.SdpMsgStopUploadRecordReq;
-import com.huaiye.sdk.HYClient;
-import com.huaiye.sdk.sdkabi._api.ApiIO;
-import com.huaiye.sdk.sdkabi._params.SdkParamsCenter;
-import com.huaiye.sdk.sdkabi._params.io.FileTupple;
-import com.huaiye.sdk.sdkabi.abilities.io.callback.CallbackUploadVideo;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.zs.R;
-import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
-import com.zs.common.rx.RxUtils;
 import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
 import com.zs.models.ModelCallback;
@@ -107,7 +99,7 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                                 }
                             }, iUploadProgress);
                         } else {
-                            if(fileUpload.isUpload == 1) {
+                            if (fileUpload.isUpload == 1) {
                                 showToast("文件正在上传");
                                 return;
                             }
@@ -208,10 +200,13 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
         showEmty();
     }
 
-    public void upLoadAll() {
+    public void upLoadAll(boolean isAuto) {
         for (FileUpload tmp : datas) {
             if (tmp.isUpload == 0 ||
                     tmp.isUpload == 2) {
+                if (isAuto && tmp.file.getName().contains("__")) {
+                    break;
+                }
                 AuthApi.get().upload(tmp, new ModelCallback<String>() {
                     @Override
                     public void onSuccess(String upload) {

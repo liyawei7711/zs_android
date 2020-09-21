@@ -24,8 +24,8 @@ android {
         multiDexEnabled true
         minSdkVersion 18
         targetSdkVersion 28
-        versionCode 8
-        versionName "0.1.8"
+        versionCode 11
+        versionName "0.1.11"
         buildConfigField "String", "commit", "\"${getGitCommit()}\""
     }
 

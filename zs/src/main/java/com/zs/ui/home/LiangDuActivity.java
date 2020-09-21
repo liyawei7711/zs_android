@@ -2,6 +2,7 @@ package com.zs.ui.home;
 
 import android.media.AudioManager;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -12,6 +13,7 @@ import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
+import com.zs.dao.auth.AppAuth;
 
 import static android.media.AudioManager.FLAG_PLAY_SOUND;
 
@@ -49,9 +51,16 @@ public class LiangDuActivity extends AppBaseActivity {
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         }
-        tv_liangdu_num.setText(systemBrightness + "");
         seekbar_liangdu.setMax(255);
-        seekbar_liangdu.setProgress(systemBrightness);
+        String strLiangDu = AppAuth.get().get("liangdu");
+        if(TextUtils.isEmpty(strLiangDu)) {
+            tv_liangdu_num.setText(systemBrightness + "");
+            seekbar_liangdu.setProgress(systemBrightness);
+        } else {
+            int liangdu = Integer.parseInt(strLiangDu);
+            tv_liangdu_num.setText(liangdu + "");
+            seekbar_liangdu.setProgress(liangdu);
+        }
         seekbar_liangdu.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -62,7 +71,7 @@ public class LiangDuActivity extends AppBaseActivity {
                     if (progress == -1) {
                         lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
                     } else {
-                        lp.screenBrightness = (progress <= 0 ? 1 : progress) / 255f;
+                        lp.screenBrightness = progress;
                     }
                     window.setAttributes(lp);
                 }
@@ -80,4 +89,9 @@ public class LiangDuActivity extends AppBaseActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        AppAuth.get().put("liangdu", tv_liangdu_num.getText().toString());
+        super.onBackPressed();
+    }
 }

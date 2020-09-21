@@ -8,6 +8,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -48,6 +50,7 @@ import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.auth.LoginActivity;
 import com.zs.ui.guide.WelcomeActivity;
 import com.zs.ui.home.KeyCodeSettingActivity;
+import com.zs.ui.home.LiangDuActivity;
 import com.zs.ui.home.MainZSActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -148,6 +151,16 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     protected void onResume() {
         super.onResume();
         isResumed = true;
+
+        String strLiangDu = AppAuth.get().get("liangdu");
+        if(TextUtils.isEmpty(strLiangDu)) {
+        } else {
+            int liangdu = Integer.parseInt(strLiangDu);
+            Window window = getWindow();
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.screenBrightness = liangdu;
+            window.setAttributes(lp);
+        }
     }
 
 

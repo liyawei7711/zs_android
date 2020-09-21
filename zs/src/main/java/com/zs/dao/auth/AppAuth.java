@@ -3,6 +3,7 @@ package com.zs.dao.auth;
 import android.text.TextUtils;
 
 import com.zs.common.SP;
+import com.zs.dao.AppConstants;
 import com.zs.models.auth.bean.AuthUser;
 
 /**
@@ -63,9 +64,11 @@ public class AppAuth {
         if (user.getServer() != null) {
             put("strSieIP", user.getServer().getMediaUrl());
             put("nSiePort", user.getServer().getMediaPort());
+            AppConstants.setSieAddress(user.getServer().getMediaUrl(), user.getServer().getMediaPort());
 
             put("strSiePlayIP", user.getServer().getRtspUrl());
             put("nSiePlayPort", user.getServer().getRtspPort());
+            AppConstants.setSiePlayerAddress(user.getServer().getRtspUrl(), user.getServer().getRtspPort());
 
             put("web_h5", user.getServer().getMediaWebUrl());
 
@@ -98,7 +101,7 @@ public class AppAuth {
         SP.setParam(key, code);
     }
 
-    private String get(String key) {
+    public String get(String key) {
         return SP.getParam(key, "").toString();
     }
 
