@@ -23,6 +23,7 @@ import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
 import com.huaiye.sdk.logger.Logger;
 import com.huaiye.sdk.sdkabi._api.ApiAuth;
+import com.huaiye.sdk.sdpmsgs.auth.CNotifyUserKickout;
 import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
@@ -171,7 +172,7 @@ public class MainZSActivity extends AppBaseActivity {
         });
 
         if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
-            ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+            ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), false, new ModelCallback<AuthUser>() {
 
                 @Override
                 public void onSuccess(AuthUser authUser) {
@@ -447,6 +448,11 @@ public class MainZSActivity extends AppBaseActivity {
                 }
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(CNotifyUserKickout bean) {
+        changeMenu();
     }
 
     /**

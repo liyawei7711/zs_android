@@ -54,7 +54,9 @@ import com.zs.dao.msgs.MapMarkBean;
 import com.zs.dao.msgs.PlayerMessage;
 import com.zs.dao.msgs.StopCaptureMessage;
 import com.zs.dao.msgs.VssMessageBean;
+import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
+import com.zs.ui.home.MainZSActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
@@ -175,14 +177,17 @@ public class MessageReceiver {
         // SDK登录被踢出
         HYClient.getModule(ApiAuth.class).observeBeKickedOut(new SdkNotifyCallback<CNotifyUserKickout>() {
             @Override
-            public void onEvent(CNotifyUserKickout cNotifyUserKickout) {
-
+            public void onEvent(final CNotifyUserKickout cNotifyUserKickout) {
 //                AppMessages.get().add(MessageData.from(cNotifyUserKickout));
-
                 showToast(AppUtils.getString(R.string.kitout_load));
-
-                Logger.log("被踢出");
-                ((MCApp) ctx).gotoLogin(false);
+                AuthApi.get().logout(MCApp.getInstance(), new ModelCallback<Object>() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        AppAuth.get().clear();
+                        HYClient.getModule(ApiAuth.class).logout(null);
+                        EventBus.getDefault().post(cNotifyUserKickout);
+                    }
+                });
             }
         });
 

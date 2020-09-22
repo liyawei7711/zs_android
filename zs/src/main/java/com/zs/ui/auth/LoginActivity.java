@@ -111,22 +111,6 @@ public class LoginActivity extends AppBaseActivity {
             }
         });
 //        tv_phone.setText(AppAuth.get().getUserLoginName());
-
-        if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
-            ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
-
-                @Override
-                public void onSuccess(AuthUser authUser) {
-                    jumpToMain(false, AppAuth.get().getUserLoginName());
-                }
-
-                @Override
-                public void onFailure(HTTPResponse httpResponse) {
-                    super.onFailure(httpResponse);
-                }
-            });
-        }
-
         qr_scanner.setDecodeCallback(new DecodeCallback() {
             @Override
             public void onDecodeSuccess(String s) {
@@ -269,7 +253,7 @@ public class LoginActivity extends AppBaseActivity {
             return;
         }
         AppConstants.setAddress(bean.ip, bean.port);
-        ModelApis.Auth().login(this, tv_phone.getText().toString(), new ModelCallback<AuthUser>() {
+        ModelApis.Auth().login(this, tv_phone.getText().toString(), false, new ModelCallback<AuthUser>() {
 
             @Override
             public void onPreStart(HTTPRequest httpRequest) {

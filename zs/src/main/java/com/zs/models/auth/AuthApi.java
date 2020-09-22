@@ -153,6 +153,60 @@ public class AuthApi {
 
     }
 
+    public void logoutHYShowDialog(final Context context, final String account, final ModelCallback<AuthUser> callback) {
+        HYClient.getModule(ApiAuth.class).login(SdkParamsCenter.Auth.Login()
+                .setAddress(AppConstants.getSieAddressIP(), Integer.parseInt(AppConstants.getSieAddressPort()))
+                .setUserId(account + "")
+                .setnPriority(999)
+                .setUserName(account), new SdkCallback<CUserRegisterRsp>() {
+            @Override
+            public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
+                successDeal(callback, null, cUserRegisterRsp);
+            }
+
+            @Override
+            public void onError(final ErrorInfo errorInfo) {
+                if (errorInfo.getCode() == ErrorMsg.re_load_code) {
+                    LogicDialog dialog = new LogicDialog(context)
+                            .setMessageText("该账号已经在线，是否强制登录？")
+                            .setCancelClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    errorDeal(errorInfo, callback);
+                                }
+                            })
+                            .setConfirmClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    HYClient.getModule(ApiAuth.class)
+                                            .login(SdkParamsCenter.Auth.Login()
+                                                    .setAddress(AppConstants.getSieAddressIP(), Integer.parseInt(AppConstants.getSieAddressPort()))
+                                                    .setUserId(account + "")
+                                                    .setnPriority(999)
+                                                    .setUserName(account)
+                                                    .setAutoKickout(true), new SdkCallback<CUserRegisterRsp>() {
+                                                @Override
+                                                public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
+                                                    successDeal(callback, null, cUserRegisterRsp);
+                                                }
+
+                                                @Override
+                                                public void onError(ErrorInfo errorInfo) {
+                                                    errorDeal(errorInfo, callback);
+                                                }
+                                            });
+                                }
+                            });
+                    dialog.setCancelable(false);
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.show();
+                } else {
+                    errorDeal(errorInfo, callback);
+                }
+            }
+        });
+    }
+
     public void loginHY(final String account, final ModelCallback<AuthUser> callback) {
         HYClient.getModule(ApiAuth.class)
                 .login(SdkParamsCenter.Auth.Login()
@@ -176,7 +230,7 @@ public class AuthApi {
                 });
     }
 
-    public void login(final Context context, final String account, final ModelCallback<AuthUser> callback) {
+    public void login(final Context context, final String account, final boolean qiangZhi, final ModelCallback<AuthUser> callback) {
         URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/login";
         AppAuth.get().put("strTokenHY", "");
         Https.get(URL)
@@ -216,15 +270,16 @@ public class AuthApi {
                         }
                         if (!"0".equals(authUser.code)) {
                             if (callback != null) {
-                                if (BuildConfig.DEBUG) {
-                                    loginHY(account, callback);
-                                }
                                 CommonBean bean = new Gson().fromJson(str, CommonBean.class);
                                 callback.onFailure(new ModelSDKErrorResp().setErrorMessage(-1, bean.msg));
                             }
                             return;
                         }
-                        loginHY(account, callback);
+                        if(qiangZhi) {
+                            loginHY(account, callback);
+                        } else {
+                            logoutHYShowDialog(context, account, callback);
+                        }
                     }
 
                     @Override

@@ -291,15 +291,12 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
                 } else {
                     // p2p超过2分钟后,业务服务器会把用户踢掉,这时候掉线再尝试下登录
                     String account = AppAuth.get().getUserLoginName();
-
                     if (!TextUtils.isEmpty(account)) {
-                        AuthApi.get().login(this, account, new ModelCallback<AuthUser>() {
-
+                        AuthApi.get().login(this, account, true, new ModelCallback<AuthUser>() {
                             @Override
                             public void onSuccess(AuthUser authUser) {
                                 stopP2P();
                             }
-
                             @Override
                             public void onFailure(HTTPResponse httpResponse) {
                                 super.onFailure(httpResponse);

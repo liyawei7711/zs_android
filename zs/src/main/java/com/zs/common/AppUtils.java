@@ -37,6 +37,7 @@ import com.huaiye.sdk.media.capture.HYCapture;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKAccelerateMethod;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioAEC;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioAGC;
+import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioFormat;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioNS;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKCaptureQuality;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKTransformMethod;
@@ -276,6 +277,8 @@ public final class AppUtils {
         ctx = context.getApplicationContext();
         mToast = Toast.makeText(ctx, "", Toast.LENGTH_SHORT);
         mToast.setGravity(Gravity.CENTER, 0, 0);
+
+        HYClient.getSdkOptions().Capture().setAudioFormat(SDKAudioFormat.G711A);
 
         if (TextUtils.isEmpty(SP.getString(CAPTURE_TYPE))) {
             SP.setParam(CAPTURE_TYPE, STRING_KEY_true);

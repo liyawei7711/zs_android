@@ -72,7 +72,7 @@ import static com.zs.common.AppUtils.showToast;
  */
 
 public class CaptureViewLayout extends FrameLayout implements View.OnClickListener {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd mm:ss");
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
     public View iv_camera;//链接相册键
     ImageView iv_shanguang;
     View iv_change;

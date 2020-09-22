@@ -165,7 +165,7 @@ public class WelcomeActivity extends AppBaseActivity {
                     || !isPermissionGranted) {
                 startLogin();
             } else {
-                AuthApi.get().login(this, account, new ModelCallback<AuthUser>() {
+                AuthApi.get().login(this, account, false, new ModelCallback<AuthUser>() {
                     @Override
                     public void onSuccess(AuthUser authUser) {
                         new RxUtils().doDelayOn(1000, new RxUtils.IMainDelay() {
