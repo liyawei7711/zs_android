@@ -4,17 +4,15 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -41,6 +39,12 @@ import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioFormat;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKAudioNS;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKCaptureQuality;
 import com.huaiye.sdk.sdkabi._options.symbols.SDKTransformMethod;
+import com.zs.BuildConfig;
+import com.zs.MCApp;
+import com.zs.R;
+import com.zs.common.views.WindowManagerUtils;
+import com.zs.ui.home.view.TalkVideoViewLayout;
+import com.zs.ui.home.view.TalkViewLayout;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -73,12 +77,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import com.zs.BuildConfig;
-import com.zs.R;
-import com.zs.common.views.WindowManagerUtils;
-import com.zs.ui.home.view.TalkVideoViewLayout;
-import com.zs.ui.home.view.TalkViewLayout;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 import static android.view.KeyEvent.KEYCODE_STEM_2;
@@ -469,22 +467,22 @@ public final class AppUtils {
                     );
                 }
                 break;
-                default:
-                    if (current == -1) {
-                        HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
-                                HYClient.getSdkOptions().Capture()
-                                        .getCaptureConfigTemplate(SDKCaptureQuality.VGA)
-                                        .setmPublishPresetoption(current)
-                                        .setBitrate(SP.getInteger(STRING_KEY_bitrate, 0) * 8 * 1000)
-                        );
-                    } else {
-                        HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
-                                HYClient.getSdkOptions().Capture()
-                                        .getCaptureConfigTemplate(SDKCaptureQuality.VGA)
-                                        .setmPublishPresetoption(current)
-                        );
-                    }
-                    break;
+            default:
+                if (current == -1) {
+                    HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+                            HYClient.getSdkOptions().Capture()
+                                    .getCaptureConfigTemplate(SDKCaptureQuality.VGA)
+                                    .setmPublishPresetoption(current)
+                                    .setBitrate(SP.getInteger(STRING_KEY_bitrate, 0) * 8 * 1000)
+                    );
+                } else {
+                    HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+                            HYClient.getSdkOptions().Capture()
+                                    .getCaptureConfigTemplate(SDKCaptureQuality.VGA)
+                                    .setmPublishPresetoption(current)
+                    );
+                }
+                break;
         }
     }
 
@@ -1107,21 +1105,21 @@ public final class AppUtils {
             //IMEI（imei）
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             @SuppressLint("MissingPermission") String imei = tm.getDeviceId();
-            if(!TextUtils.isEmpty(imei)){
+            if (!TextUtils.isEmpty(imei)) {
 //                deviceId.append("imei");
                 deviceId.append(imei);
                 return deviceId.toString();
             }
             //序列号（sn）
             @SuppressLint("MissingPermission") String sn = tm.getSimSerialNumber();
-            if(!TextUtils.isEmpty(sn)){
+            if (!TextUtils.isEmpty(sn)) {
                 deviceId.append("sn");
                 deviceId.append(sn);
                 return deviceId.toString();
             }
             //如果上面都没有， 则生成一个id：随机码
             String uuid = UUID.randomUUID().toString();
-            if(!TextUtils.isEmpty(uuid)){
+            if (!TextUtils.isEmpty(uuid)) {
                 deviceId.append("id");
                 deviceId.append(uuid);
                 return deviceId.toString();
@@ -1186,11 +1184,12 @@ public final class AppUtils {
         return Environment.getExternalStorageState().equals(
                 Environment.MEDIA_MOUNTED);
     }
+
     /**
      * 获取手机内部存储空间
      *
      * @param context
-     * @return 以M,G为单位的容量
+     * @return 以M, G为单位的容量
      */
     public static String getInternalMemorySize(Context context) {
         File file = Environment.getDataDirectory();
@@ -1200,11 +1199,12 @@ public final class AppUtils {
         long size = blockCountLong * blockSizeLong;
         return Formatter.formatFileSize(context, size);
     }
+
     /**
      * 获取手机内部可用存储空间
      *
      * @param context
-     * @return 以M,G为单位的容量
+     * @return 以M, G为单位的容量
      */
     public static String getAvailableInternalMemorySize(Context context) {
         File file = Environment.getDataDirectory();
@@ -1214,11 +1214,12 @@ public final class AppUtils {
         return Formatter.formatFileSize(context, availableBlocksLong
                 * blockSizeLong);
     }
+
     /**
      * 获取手机外部存储空间
      *
      * @param context
-     * @return 以M,G为单位的容量
+     * @return 以M, G为单位的容量
      */
     public static String getExternalMemorySize(Context context) {
         File file = Environment.getExternalStorageDirectory();
@@ -1228,11 +1229,12 @@ public final class AppUtils {
         return Formatter
                 .formatFileSize(context, blockCountLong * blockSizeLong);
     }
+
     /**
      * 获取手机外部可用存储空间
      *
      * @param context
-     * @return 以M,G为单位的容量
+     * @return 以M, G为单位的容量
      */
     public static String getAvailableExternalMemorySize(Context context) {
         File file = Environment.getExternalStorageDirectory();
@@ -1241,6 +1243,28 @@ public final class AppUtils {
         long blockSizeLong = statFs.getBlockSizeLong();
         return Formatter.formatFileSize(context, availableBlocksLong
                 * blockSizeLong);
+    }
+
+    public static void createkuaijieicon() {
+        boolean shortcut = SP.getBoolean("shortcut", false);
+//        if (shortcut) {
+//            return;
+//        }
+        //发送广播的意图，告诉桌面要创建快捷图标
+        Intent intent = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
+//快捷方式要包含3个重要的信息：名称，图标，干什么事
+        intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, MCApp.getInstance().getResources().getString(R.string.app_name));
+        intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, BitmapFactory.decodeResource(MCApp.getInstance().getResources(), R.drawable.logo_svg));
+        intent.putExtra("duplicate", false);
+        //桌面点击图标对应的意图
+        Intent itentshotcut = new Intent();
+        itentshotcut.setAction("android.intent.action.MAIN");
+        itentshotcut.addCategory("android.intent.category.LAUNCHER");
+        itentshotcut.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        itentshotcut.setClassName(MCApp.getInstance().getPackageName(), "com.zs.ui.home.MainZSActivity");//指向入口的activty
+        intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, itentshotcut);
+        MCApp.getInstance().sendBroadcast(intent);
+        SP.putBoolean("shortcut", true);
     }
 
 }

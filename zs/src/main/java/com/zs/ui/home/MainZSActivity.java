@@ -266,6 +266,7 @@ public class MainZSActivity extends AppBaseActivity {
         rv_data.setLayoutManager(new GridLayoutManager(this, 2));
         rv_data.setAdapter(adapter);
 
+        AppUtils.createkuaijieicon();
     }
 
     private void startCapture() {
