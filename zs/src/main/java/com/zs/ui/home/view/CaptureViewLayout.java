@@ -605,12 +605,12 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
                     @Override
                     public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
-
+                        System.out.println("ccccccccccccccccccccccccccccc1 stopCapture success");
                     }
 
                     @Override
                     public void onError(ErrorInfo errorInfo) {
-
+                        System.out.println("ccccccccccccccccccccccccccccc1 stopCapture onError " +errorInfo.toString());
                     }
                 });
                 closeMedia();
