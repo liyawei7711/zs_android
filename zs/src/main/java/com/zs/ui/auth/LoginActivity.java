@@ -227,17 +227,7 @@ public class LoginActivity extends AppBaseActivity {
         AppUtils.isMeet = false;
         AppUtils.isTalk = false;
         AppUtils.isVideo = false;
-        HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
-            @Override
-            public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
 
-            }
-
-            @Override
-            public void onError(ErrorInfo errorInfo) {
-
-            }
-        });
         setResult(RESULT_OK);
         finish();
 //        startActivity(new Intent(this, MainZSActivity.class));

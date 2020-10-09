@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.zs.common.AppUtils;
+import com.zs.models.auth.bean.CommonBean;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -63,11 +64,11 @@ public abstract class ModelCallback<T> extends HTTPUIThreadCallbackAdapter {
     public final void onSuccess(HTTPResponse httpResponse) {
         String str = httpResponse.getContentToString();
         Log.i("MCApp", "resp -> " + httpResponse.getHttpRequest().getRequestURL() + ":::" + str);
-
-//        if (response.code == 3) {
-//            HttpExecutorPool.get().getDefaultExecutor().clearAllReq();
-//        }
-        onSuccess(gson.fromJson(str, gsonType));
+        CommonBean bean = gson.fromJson(str, CommonBean.class);
+        if ("401".equals(bean.code)) {
+        } else {
+            onSuccess(gson.fromJson(str, gsonType));
+        }
     }
 
     @Override

@@ -164,13 +164,7 @@ public class MainZSActivity extends AppBaseActivity {
     @Override
     public void doInitDelay() {
         rxUtils = new RxUtils();
-        ModelApis.Auth().getServiceConfig(new ModelCallback<ConfigResult>() {
-            @Override
-            public void onSuccess(ConfigResult changePwd) {
-                ModelApis.Auth().requestVersion(MainZSActivity.this, null);
-            }
-        });
-
+        ModelApis.Auth().requestVersion(MainZSActivity.this, null);
         if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
             ModelApis.Auth().login(this, AppAuth.get().getUserLoginName(), false, new ModelCallback<AuthUser>() {
 
@@ -205,7 +199,7 @@ public class MainZSActivity extends AppBaseActivity {
                         MainZSMenuBean bean = (MainZSMenuBean) v.getTag();
                         switch (bean.code) {
                             case 1:
-                                startCapture();
+                                startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
                                 break;
                             case 2:
 //                                MediaFileDaoUtils.get().clear();
@@ -269,25 +263,6 @@ public class MainZSActivity extends AppBaseActivity {
         AppUtils.createkuaijieicon();
     }
 
-    private void startCapture() {
-        HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
-            @Override
-            public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
-            }
-
-            @Override
-            public void onError(ErrorInfo errorInfo) {
-            }
-        });
-        rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
-            @Override
-            public void onMainDelay() {
-                startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
-            }
-        });
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -306,8 +281,11 @@ public class MainZSActivity extends AppBaseActivity {
                 } else {
                     temp.img_id = R.drawable.zs_main_dengchu;
                     temp.name = "登出";
-                }
 
+                    if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                        startActivityForResult(new Intent(MainZSActivity.this, LoginActivity.class), 1000);
+                    }
+                }
                 adapter.notifyDataSetChanged();
                 break;
             }
@@ -381,9 +359,9 @@ public class MainZSActivity extends AppBaseActivity {
             return;
         }
         if (bean.action.equals("zzx_action_record")) {
-            startCapture();
+            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
         } else if (bean.action.equals("zzx_action_capture")) {
-            startCapture();
+            startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
         } else if (bean.action.equals("zzx_action_mic")) {
 
         }

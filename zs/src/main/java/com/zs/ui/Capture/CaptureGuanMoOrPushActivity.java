@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import com.baidu.location.BDLocation;
 import com.google.gson.Gson;
 import com.huaiye.cmf.sdp.SdpMessageCmStartSessionRsp;
+import com.huaiye.sdk.sdpmsgs.auth.CNotifyUserKickout;
 import com.huaiye.sdk.sdpmsgs.social.SendUserBean;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
@@ -190,6 +191,12 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(CNotifyUserKickout bean) {
+        captureView.onBackPressed(true, true);
+        super.onBackPressed();
+    }
+
     @Override
     public void onBackPressed() {
         if (captureView.onBackPressed(true, false)) {
@@ -202,7 +209,9 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        captureView.onDestroy();
+        if (MCApp.getInstance().getTopActivity() != null) {
+            MCApp.getInstance().getTopActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         AppUtils.isCaptureLayoutShowing = true;
         MCApp.getInstance().guanMoOrPushActivity = null;
         EventBus.getDefault().unregister(this);

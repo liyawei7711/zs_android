@@ -94,50 +94,14 @@ public class AuthApi {
 
     private AuthApi() {
     }
-
     public static AuthApi get() {
         return new AuthApi();
     }
-
-
-    public void getServiceConfig(final ModelCallback<ConfigResult> callback) {
-        String URL = "http://192.168.1.2/vss/httpjson/get_vss_config_para";
-        ArrayList<String> params = new ArrayList<>();
-        params.add("FILE_SERVICE_IP");
-        params.add("FILE_SERVICE_PORT");
-        Https.post(URL)
-                .addParam("lstVssConfigParaName", params)
-                .setHttpCallback(new ModelCallback<ConfigResult>() {
-
-                    @Override
-                    public void onSuccess(ConfigResult response) {
-                        if (response.nResultCode == 0) {
-                            for (int i = 0; i < response.getLstVssConfigParaInfo().size(); i++) {
-                                ConfigResult.Info info = response.getLstVssConfigParaInfo().get(i);
-                                if (info.getStrVssConfigParaName().equals("FILE_SERVICE_IP")) {
-                                }
-                                if (info.getStrVssConfigParaName().equals("FILE_SERVICE_PORT")) {
-                                }
-                            }
-                            callback.onSuccess(response);
-                        } else {
-                            callback.onFinish(null);
-                        }
-                    }
-
-                    @Override
-                    public void onFinish(HTTPResponse httpResponse) {
-                        super.onFinish(httpResponse);
-                        if (callback != null) {
-                            callback.onFinish(httpResponse);
-                        }
-                    }
-                })
-                .build()
-                .requestNowAsync();
-
-    }
-
+    /**
+     * 登出
+     * @param context
+     * @param callback
+     */
     public void logout(Context context, ModelCallback<Object> callback) {
         URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/loginout";
         Https.get(URL)
@@ -152,7 +116,11 @@ public class AuthApi {
         }
 
     }
-
+    /**
+     * 登录流媒体，强制提醒
+     * @param context
+     * @param callback
+     */
     public void logoutHYShowDialog(final Context context, final String account, final ModelCallback<AuthUser> callback) {
         HYClient.getModule(ApiAuth.class).login(SdkParamsCenter.Auth.Login()
                 .setAddress(AppConstants.getSieAddressIP(), Integer.parseInt(AppConstants.getSieAddressPort()))
@@ -161,7 +129,7 @@ public class AuthApi {
                 .setUserName(account), new SdkCallback<CUserRegisterRsp>() {
             @Override
             public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
-                successDeal(callback, null, cUserRegisterRsp);
+                successDeal(callback, null);
             }
 
             @Override
@@ -187,7 +155,7 @@ public class AuthApi {
                                                     .setAutoKickout(true), new SdkCallback<CUserRegisterRsp>() {
                                                 @Override
                                                 public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
-                                                    successDeal(callback, null, cUserRegisterRsp);
+                                                    successDeal(callback, null);
                                                 }
 
                                                 @Override
@@ -206,7 +174,10 @@ public class AuthApi {
             }
         });
     }
-
+    /**
+     * 登录流媒体
+     * @param callback
+     */
     public void loginHY(final String account, final ModelCallback<AuthUser> callback) {
         HYClient.getModule(ApiAuth.class)
                 .login(SdkParamsCenter.Auth.Login()
@@ -219,7 +190,7 @@ public class AuthApi {
                     public void onSuccess(CUserRegisterRsp cUserRegisterRsp) {
                         System.out.println("ccccccccccccccccccccc onSuccess:" + cUserRegisterRsp.strUserTokenID);
                         AppAuth.get().put("strTokenHY", cUserRegisterRsp.strUserTokenID);
-                        successDeal(callback, null, cUserRegisterRsp);
+                        successDeal(callback, null);
                     }
 
                     @Override
@@ -229,7 +200,11 @@ public class AuthApi {
                     }
                 });
     }
-
+    /**
+     * 登录业务服务器
+     * @param context
+     * @param callback
+     */
     public void login(final Context context, final String account, final boolean qiangZhi, final ModelCallback<AuthUser> callback) {
         URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/login";
         AppAuth.get().put("strTokenHY", "");
@@ -294,6 +269,10 @@ public class AuthApi {
                 .requestNowAsync();
     }
 
+    /**
+     * 上传GPS
+     * @param context
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void pushGPS(Context context, BDLocation location) {
         if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
@@ -321,7 +300,10 @@ public class AuthApi {
                 .build()
                 .requestNowAsync();
     }
-
+    /**
+     * 设备未使用
+     * @param context
+     */
     public void startUnUsDevice(Context context) {
         Https.get(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceOutUse")
                 .addHeader("Authorization", AppAuth.get().getToken())
@@ -335,7 +317,10 @@ public class AuthApi {
                 .build()
                 .requestNowAsync();
     }
-
+    /**
+     * 设备未使用
+     * @param context
+     */
     public void startUsDevice(Context context, AnJianBean bean) {
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/deviceInUse")
                 .addHeader("Authorization", AppAuth.get().getToken())
@@ -354,7 +339,10 @@ public class AuthApi {
                 .build()
                 .requestNowAsync();
     }
-
+    /**
+     * 改变采集状态
+     * @param context
+     */
     public void changeCapture(Context context, String url, final boolean isCapture, AnJianBean bean) {
 
         Https.post(AppConstants.getAddressBaseURL() + "aj/mediaApk/captureState")
@@ -385,10 +373,8 @@ public class AuthApi {
         }
 
     }
-
     /**
      * 出错处理
-     *
      * @param errorInfo
      * @param callback
      */
@@ -401,15 +387,12 @@ public class AuthApi {
             }
         }
     }
-
     /**
      * 成功处理
-     *
      * @param callback
      * @param finalAuthUser
-     * @param registerRsp
      */
-    private void successDeal(ModelCallback<AuthUser> callback, AuthUser finalAuthUser, CUserRegisterRsp registerRsp) {
+    private void successDeal(ModelCallback<AuthUser> callback, AuthUser finalAuthUser) {
         SP.putBoolean(STRING_KEY_needload, true);
         if (callback != null) {
             callback.onSuccess(finalAuthUser);
@@ -423,7 +406,6 @@ public class AuthApi {
         // OSD名称初始化
         HYClient.getSdkOptions().Capture().setOSDCustomCommand(strOSDCommand);
     }
-
     /**
      * 获取版本信息
      *
@@ -499,7 +481,6 @@ public class AuthApi {
                 .build()
                 .requestNowAsync();
     }
-
     /**
      * 崩溃时处理
      */
@@ -507,7 +488,6 @@ public class AuthApi {
         AppUtils.zip(tagZip, tag);
         upload(tag, isShow);
     }
-
     /**
      * 每次启动检测上传
      */
@@ -516,7 +496,6 @@ public class AuthApi {
             upload(tag, isShow);
         }
     }
-
     public void upload(final File tag, final boolean isShow) {
         String URL = AppConstants.getAddressBaseURL() + "aj/mediaApk/file";
 //        if (tag.length() > 1028 * 1028 * 50) {
@@ -581,7 +560,6 @@ public class AuthApi {
                 .build()
                 .requestNowAsync();
     }
-
     /**
      * 上传
      *
@@ -591,7 +569,6 @@ public class AuthApi {
                        final ModelCallback<String> callback,
                        final IUploadProgress progress) {
         UploadModelBean bean = new UploadModelBean(tag);
-        System.out.println("resp pre cccccccccc " + new Gson().toJson(bean));
         OkHttpClient Client = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -718,7 +695,6 @@ public class AuthApi {
             }
         };
     }
-
 
     public interface ProgressListener {
         void onProgress(long totalBytes, long remainingBytes, boolean done);
