@@ -117,23 +117,23 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
             captureView.startPreviewVideo(false);
         } else {
             isOffline = false;
-            AppAuth.get().put("strTokenHY", "");
-            if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
-                AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
-                    @Override
-                    public void onSuccess(AuthUser authUser) {
-                        captureView.startPreviewVideo(false);
-                    }
-
-                    @Override
-                    public void onFailure(HTTPResponse httpResponse) {
-                        super.onFailure(httpResponse);
-                        captureView.startPreviewVideo(false);
-                    }
-                });
-            } else {
+//            AppAuth.get().put("strTokenHY", "");
+//            if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+//                AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+//                    @Override
+//                    public void onSuccess(AuthUser authUser) {
+//                        captureView.startPreviewVideo(false);
+//                    }
+//
+//                    @Override
+//                    public void onFailure(HTTPResponse httpResponse) {
+//                        super.onFailure(httpResponse);
+//                        captureView.startPreviewVideo(false);
+//                    }
+//                });
+//            } else {
                 captureView.startPreviewVideo(false);
-            }
+//            }
         }
     }
 
@@ -158,17 +158,17 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
         } else {
             if (isOffline) { //变动前无网络
                 //现在有网络
-                AppAuth.get().put("strTokenHY", "");
-                if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
-                    AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
-                        @Override
-                        public void onSuccess(AuthUser authUser) {
-                        }
-                    });
-                }
+//                AppAuth.get().put("strTokenHY", "");
+//                if (!TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+//                    AuthApi.get().loginHY(AppAuth.get().getUserLoginName(), new ModelCallback<AuthUser>() {
+//                        @Override
+//                        public void onSuccess(AuthUser authUser) {
+//                        }
+//                    });
+//                }
             } else {//变动前有网络
                 //现在无网络
-                showToast("网络断开，正在录像切换");
+                showToast("网络断开，请重新录制");
                 if(!captureView.onBackPressed(false, false)) {
                     super.onBackPressed();
                 }
@@ -193,7 +193,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(CNotifyUserKickout bean) {
-        captureView.onBackPressed(true, true);
+        captureView.onBackPressed(false, false);
         super.onBackPressed();
     }
 

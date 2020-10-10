@@ -251,9 +251,9 @@ public class AuthApi {
                             return;
                         }
                         if(qiangZhi) {
-                            loginHY(account, callback);
-                        } else {
                             logoutHYShowDialog(context, account, callback);
+                        } else {
+                            loginHY(account, callback);
                         }
                     }
 

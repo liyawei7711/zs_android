@@ -105,7 +105,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     boolean isFromGuanMo;//是否是观摩启动
     public MediaFileDaoUtils.MediaFile mMediaMP4File;
     public MediaFileDaoUtils.MediaFile mMediaImgFile;
-    CStartMobileCaptureRsp startMobileCaptureRsp;
 
     Disposable timeDisposable;
 
@@ -294,7 +293,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     }
 
     public void stopCapture() {
-        startMobileCaptureRsp = null;
         isStart = false;
         iv_start_stop.setImageResource(R.drawable.zs_start_bg);
         if (isCapturing() || isCapturStarting()) {
@@ -332,7 +330,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     }
 
     private void sendPlayerMessage() {
-        if (startMobileCaptureRsp != null) {
             String playerUrl = "rtsp://"
                     + AppConstants.getSiePlayerddressIP()
                     + ":"
@@ -344,7 +341,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                     + "?BitRate=512;FrameRate=25;IFrame=100;DmgType=2337";
             System.out.println("cccccccccccccccccccccccccccccccc resp " + playerUrl);
             AuthApi.get().changeCapture(getContext(), playerUrl, true, bean == null ? new AnJianBean() : bean);
-        }
         AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
     }
 
@@ -372,14 +368,15 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                     .setRecordPath(mMediaMP4File.getRecordPath())
                     .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
                     .setPreview(ttv_capture);
+            HYClient.getHYCapture().x().setRecordLocalPath(mMediaMP4File.getRecordPath());
             iv_start_stop.setImageResource(R.drawable.zs_start_rec_bg);
         } else {
             params = Capture.Params.get()
                     .setEnableServerRecord((netStatus == -1) ? false : true)
                     .setCaptureOrientation(HYCapture.CaptureOrientation.SCREEN_ORIENTATION_PORTRAIT)
-                    .setRecordPath(mMediaMP4File.getRecordPath())
                     .setCameraIndex(SP.getInteger(STRING_KEY_camera, -1) == 1 ? HYCapture.Camera.Foreground : HYCapture.Camera.Background)
                     .setPreview(ttv_capture);
+            HYClient.getHYCapture().x().setRecordLocalPath("");
             iv_start_stop.setImageResource(R.drawable.zs_start_bg);
         }
 
@@ -417,7 +414,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 
                     @Override
                     public void onSuccess(CStartMobileCaptureRsp resp) {
-                        startMobileCaptureRsp = resp;
                         changeClickAble(true);
                         view_cover.setVisibility(GONE);
                         captureStatus = CAPTURE_STATUS_CAPTURING;
@@ -545,7 +541,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
     }
 
     public boolean onBackPressed(boolean isUser, final boolean fromCaptureView) {
-        startMobileCaptureRsp = null;
         if (ll_guanlian.getVisibility() == VISIBLE) {
             ll_guanlian.setVisibility(GONE);
             if (isUser) {
