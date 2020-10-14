@@ -90,6 +90,12 @@ public class SelectOrgActivity extends AppBaseActivity {
                         }
 
                         adapter.notifyDataSetChanged();
+                        if(current != null) {
+                            Intent intent = new Intent();
+                            intent.putExtra("org", current);
+                            setResult(Activity.RESULT_OK, intent);
+                            finish();
+                        }
                     }
                 }, "");
 

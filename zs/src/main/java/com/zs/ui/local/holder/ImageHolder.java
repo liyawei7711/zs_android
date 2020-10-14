@@ -39,7 +39,7 @@ public class ImageHolder extends LiteViewHolder {
         tv_image_size = view.findViewById(R.id.tv_image_size);
         iv_upload = view.findViewById(R.id.iv_upload);
         pb_progress = view.findViewById(R.id.pb_progress);
-        itemView.setOnClickListener(ocl);
+        tv_image_name.setOnClickListener(ocl);
         iv_upload.setOnClickListener(ocl);
     }
 
@@ -47,7 +47,7 @@ public class ImageHolder extends LiteViewHolder {
     public void bindData(Object holder, int position, Object data, int size, List datas, Object extr) {
         FileUpload bean = (FileUpload) data;
         iv_upload.setTag(bean);
-        itemView.setTag(bean);
+        tv_image_name.setTag(bean);
         tv_image_name.setText(bean.name);
         tv_image_size.setText(Formatter.formatFileSize(context, bean.file.length()));
         if(bean.totalBytes == 0) {

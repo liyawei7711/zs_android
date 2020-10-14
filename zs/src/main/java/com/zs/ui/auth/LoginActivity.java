@@ -5,21 +5,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+
 import com.google.gson.Gson;
-import com.huaiye.sdk.HYClient;
-import com.huaiye.sdk.core.SdkCallback;
-import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.qrcode.scanner.QRCodeScannerView;
-import com.qrcode.scanner.ScannerRectView;
 import com.qrcode.scanner.decode.DecodeCallback;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
@@ -37,7 +33,6 @@ import com.zs.models.ModelCallback;
 import com.zs.models.auth.bean.AuthUser;
 import com.zs.models.auth.bean.ErWeiMaBean;
 import com.zs.ui.auth.holder.OrgBean;
-import com.zs.ui.home.MainZSActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -127,6 +122,12 @@ public class LoginActivity extends AppBaseActivity {
             }
         });
 
+        if(!TextUtils.isEmpty(AppAuth.get().get("org"))) {
+            String str = AppAuth.get().get("org");
+            bean = new Gson().fromJson(str, OrgBean.class);
+            tv_org.setText(bean.name);
+        }
+
         checkPermission();
     }
 
@@ -140,6 +141,7 @@ public class LoginActivity extends AppBaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             bean = (OrgBean) data.getSerializableExtra("org");
+            AppAuth.get().put("org", new Gson().toJson(bean));
             tv_org.setText(bean.name);
         }
     }
@@ -234,6 +236,11 @@ public class LoginActivity extends AppBaseActivity {
     }
 
     void login() {
+        int netStatus = AppUtils.getNetWorkStatus(this);
+        if (netStatus == -1) {
+            showToast("网络异常");
+            return;
+        }
         if (TextUtils.isEmpty(tv_phone.getText())) {
             showToast(AppUtils.getString(R.string.count_pwd_empty));
             return;

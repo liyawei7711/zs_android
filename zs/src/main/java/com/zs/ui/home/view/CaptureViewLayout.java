@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -22,7 +23,6 @@ import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
 import com.huaiye.sdk.media.capture.Capture;
 import com.huaiye.sdk.media.capture.HYCapture;
-import com.huaiye.sdk.sdkabi._options.symbols.SDKCaptureQuality;
 import com.huaiye.sdk.sdpmsgs.video.CStartMobileCaptureRsp;
 import com.huaiye.sdk.sdpmsgs.video.CStopMobileCaptureRsp;
 import com.zs.MCApp;
@@ -37,6 +37,7 @@ import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.AnJianBean;
+import com.zs.ui.home.MainZSActivity;
 import com.zs.ui.local.PhotoAndVideoActivity;
 import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.web.WebJSActivity;
@@ -161,17 +162,6 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
 //                + "," +
 //                AppUtils.getAvailableExternalMemorySize(context));
         showDataTime();
-        switch (SP.getInteger(STRING_KEY_mPublishPresetoption, 1)) {
-            case 1:
-                tv_fenbianlv.setText("640x480");
-                break;
-            case 2:
-                tv_fenbianlv.setText("1280x720");
-                break;
-            case 3:
-                tv_fenbianlv.setText("1920x1080");
-                break;
-        }
 
         setOnClickListener(new OnClickListener() {
             @Override
@@ -190,6 +180,15 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             case R.id.iv_anjian:
                 //关联信息
                 if (bean == null) {
+                    int netStatus = AppUtils.getNetWorkStatus(getContext());
+                    if (netStatus == -1) {
+                        showToast("当前无网络");
+                        return;
+                    }
+                    if (TextUtils.isEmpty(AppAuth.get().getUserLoginName())) {
+                        showToast("当前未登录");
+                        return;
+                    }
                     Intent intent = new Intent(getContext(), WebJSActivity.class);
                     intent.putExtra("fromCapture", true);
                     ((Activity) getContext()).startActivityForResult(intent, 100);
@@ -246,6 +245,10 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             case R.id.iv_suofang:
                 break;
             case R.id.iv_take_photo:
+                if (isStart) {
+                    showToast("正在录像，不可拍照");
+                    return;
+                }
                 if (System.currentTimeMillis() - lstTakePicker < 1300) {
                     showToast("正在处理上传，请稍后");
                     return;
@@ -381,7 +384,9 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         }
 
         ((Activity) getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        ttv_capture.getLayoutParams().height = calcHeightHeight();
+        ViewGroup.LayoutParams lp = ttv_capture.getLayoutParams();
+        lp.height = calcHeightHeight();
+        ttv_capture.setLayoutParams(lp);
         setVisibility(VISIBLE);
 
         toggleShuiYin(MCApp.getInstance().locationService.getCurrentBDLocation());
@@ -472,24 +477,31 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         int height = AppUtils.getSize(332);
         switch (SP.getParam(STRING_KEY_capture, "").toString()) {
             case STRING_KEY_VGA:
-                height = AppUtils.getSize(332);
-                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
-                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.VGA)
-                );
+                height = (int) (1.3333 * Float.valueOf(AppUtils.getScreenWidth()));
+//                height = AppUtils.getSize(332);
+                tv_fenbianlv.setText("640x480");
+//                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+//                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.VGA)
+//                );
                 break;
             case STRING_KEY_HD720P:
-                height = AppUtils.getSize(415);
-                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
-                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HDVGA)
-                );
+                height = (int) (1.7777 * Float.valueOf(AppUtils.getScreenWidth()));
+//                height = AppUtils.getSize(415);
+                tv_fenbianlv.setText("1280x720");
+//                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+//                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HDVGA)
+//                );
                 break;
             case STRING_KEY_HD1080P:
-                height = AppUtils.getSize(415);
-                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
-                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HD1080P)
-                );
+                height = (int) (1.7777 * Float.valueOf(AppUtils.getScreenWidth()));
+//                height = AppUtils.getSize(415);
+                tv_fenbianlv.setText("1920x1080");
+//                HYClient.getSdkOptions().Capture().setCustomCaptureConfig(
+//                        HYClient.getSdkOptions().Capture().getCaptureConfigTemplate(SDKCaptureQuality.HD1080P)
+//                );
                 break;
         }
+
         return height;
     }
 

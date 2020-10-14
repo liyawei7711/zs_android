@@ -202,6 +202,7 @@ public class MainZSActivity extends AppBaseActivity {
                                 startActivity(new Intent(MainZSActivity.this, CaptureGuanMoOrPushActivity.class));
                                 break;
                             case 2:
+                                showToast("正在开发中");
 //                                MediaFileDaoUtils.get().clear();
 //                                ModelApis.Auth().requestVersion(MainZSActivity.this, new ModelCallback<VersionData>() {
 //                                    @Override
@@ -239,12 +240,12 @@ public class MainZSActivity extends AppBaseActivity {
                                             AuthApi.get().logout(MainZSActivity.this, new ModelCallback<Object>() {
                                                 @Override
                                                 public void onSuccess(Object o) {
-                                                    AppAuth.get().clear();
-                                                    HYClient.getModule(ApiAuth.class).logout(null);
-                                                    changeMenu();
 //                                                    finish();
                                                 }
                                             });
+                                            AppAuth.get().clear();
+                                            HYClient.getModule(ApiAuth.class).logout(null);
+                                            changeMenu();
                                         }
                                     }).setCancelClickListener(new View.OnClickListener() {
                                         @Override

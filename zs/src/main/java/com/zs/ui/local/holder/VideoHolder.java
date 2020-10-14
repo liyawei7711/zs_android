@@ -39,17 +39,17 @@ public class VideoHolder extends LiteViewHolder {
         tv_video_size = view.findViewById(R.id.tv_video_size);
         iv_upload = view.findViewById(R.id.iv_upload);
         pb_progress = view.findViewById(R.id.pb_progress);
-        itemView.setOnClickListener(ocl);
+        tv_video_name.setOnClickListener(ocl);
         iv_upload.setOnClickListener(ocl);
     }
 
     @Override
     public void bindData(Object holder, int position, Object data, int size, List datas, Object extr) {
         FileUpload bean = (FileUpload) data;
-        itemView.setTag(bean);
         iv_upload.setTag(bean);
+        tv_video_name.setTag(bean);
         tv_video_name.setText(bean.name);
-        tv_video_size.setText(JniIntf.GetRecordFileDuration(bean.file.getAbsolutePath()) + "");
+        tv_video_size.setText(JniIntf.GetRecordFileDuration(bean.file.getAbsolutePath()) + "s");
         if(bean.totalBytes == 0) {
             pb_progress.setMax(100);
             pb_progress.setProgress(0);
