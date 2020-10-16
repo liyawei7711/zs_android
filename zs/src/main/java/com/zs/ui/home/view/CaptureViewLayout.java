@@ -245,10 +245,10 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             case R.id.iv_suofang:
                 break;
             case R.id.iv_take_photo:
-                if (isStart) {
-                    showToast("正在录像，不可拍照");
-                    return;
-                }
+//                if (isStart) {
+//                    showToast("正在录像，不可拍照");
+//                    return;
+//                }
                 if (System.currentTimeMillis() - lstTakePicker < 1300) {
                     showToast("正在处理上传，请稍后");
                     return;
@@ -543,7 +543,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         this.bean = bean;
         if (bean != null) {
             iv_anjian.setImageResource(R.drawable.zs_lianjie);
-            tv_anjian.setText(bean.companyName);
+            tv_anjian.setText(bean.getName());
         } else {
             iv_anjian.setImageResource(R.drawable.zs_add);
             ll_guanlian.setVisibility(GONE);
@@ -556,6 +556,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         if (ll_guanlian.getVisibility() == VISIBLE) {
             ll_guanlian.setVisibility(GONE);
             if (isUser) {
+                changeClickAble(true);
                 return true;
             }
         }
@@ -569,16 +570,17 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
                 HYClient.getHYCapture().stopCapture(new SdkCallback<CStopMobileCaptureRsp>() {
                     @Override
                     public void onSuccess(CStopMobileCaptureRsp cStopMobileCaptureRsp) {
+                        changeClickAble(true);
                     }
 
                     @Override
                     public void onError(ErrorInfo errorInfo) {
+                        changeClickAble(true);
                     }
                 });
                 closeMedia();
                 iv_start_stop.setImageResource(R.drawable.zs_start_bg);
                 AppUtils.isCaptureLayoutShowing = false;
-                changeClickAble(true);
                 if (fromCaptureView) {
                     startPreviewVideo(false);
                 }

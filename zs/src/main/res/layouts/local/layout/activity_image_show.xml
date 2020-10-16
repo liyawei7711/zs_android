@@ -1,6 +1,22 @@
-<ImageView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/iv_photo"
     android:layout_width="match_parent"
     android:background="@color/black666"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_photo"
+        android:layout_width="match_parent"
+        android:background="@color/black666"
+        android:layout_height="match_parent"/>
+
+    <TextView
+        android:id="@+id/tv_current"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="30dp"
+        android:textSize="16sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"/>
+
+</FrameLayout>

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zs.R;
+import com.zs.bus.UploadMediaFile;
 import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
@@ -23,6 +24,10 @@ import com.zs.models.ModelCallback;
 import com.zs.models.auth.AuthApi;
 import com.zs.ui.local.bean.FileUpload;
 import com.zs.ui.local.holder.VideoHolder;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +60,42 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(UploadMediaFile bean) {
+        if (bean.bean.isImg) {
+            return;
+        }
+        for(FileUpload temp : datas) {
+            if(temp.file.getAbsolutePath().equals(bean.bean.file.getAbsolutePath())) {
+                temp.isUpload = bean.bean.isUpload;
+                temp.remainingBytes = bean.bean.remainingBytes;
+                temp.totalBytes = bean.bean.totalBytes;
+                temp.isImg = bean.bean.isImg;
+                int i = datas.indexOf(temp);
+                if (temp.isUpload == 3) {
+                    temp.file.delete();
+                    if (i != -1) {
+                        datas.remove(i);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+                break;
+            }
+        }
+
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if(!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
         rcv_list = view.findViewById(R.id.rcv_list);
         ll_empty = view.findViewById(R.id.ll_empty);
         fl_progress = view.findViewById(R.id.fl_progress);

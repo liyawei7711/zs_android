@@ -18,6 +18,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.ttyy.commonanno.anno.BindLayout;
@@ -41,6 +42,8 @@ import com.zs.models.auth.bean.AnJianBean;
 public class WebJSActivity extends AppBaseActivity {
     @BindView(R.id.fl_root)
     FrameLayout fl_root;
+    @BindView(R.id.tv_anjian)
+    TextView tv_anjian;
 
     @BindView(R.id.webview)
     WebView webview;
@@ -78,6 +81,15 @@ public class WebJSActivity extends AppBaseActivity {
         System.out.println("ccccccccccccccccccccc h5 " +AppAuth.get().getH5Web());
         webview.loadUrl(AppAuth.get().getH5Web());
 //        webview.loadUrl("http://www.baidu.com");
+
+        if (!TextUtils.isEmpty(AppAuth.get().getAnJian())) {
+            AnJianBean bean = new Gson().fromJson(AppAuth.get().getAnJian(), AnJianBean.class);
+            tv_anjian.setText(bean.getName());
+            tv_anjian.setVisibility(View.VISIBLE);
+        } else {
+            tv_anjian.setVisibility(View.GONE);
+        }
+
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.huaiye.cmf.JniIntf;
 import com.zs.R;
+import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteViewHolder;
 import com.zs.ui.local.bean.FileUpload;
 
@@ -49,7 +50,7 @@ public class VideoHolder extends LiteViewHolder {
         iv_upload.setTag(bean);
         tv_video_name.setTag(bean);
         tv_video_name.setText(bean.name);
-        tv_video_size.setText(JniIntf.GetRecordFileDuration(bean.file.getAbsolutePath()) + "s");
+        tv_video_size.setText(AppUtils.secondToTime(JniIntf.GetRecordFileDuration(bean.file.getAbsolutePath())));
         if(bean.totalBytes == 0) {
             pb_progress.setMax(100);
             pb_progress.setProgress(0);

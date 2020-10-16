@@ -1,11 +1,14 @@
 package com.zs.ui.local;
 
 import android.os.Bundle;
-import androidx.annotation.Nullable;
+import android.os.Handler;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+
+import com.bumptech.glide.Glide;
 import com.huaiye.cmf.sdp.SdpMessageBase;
 import com.huaiye.sdk.HYClient;
 import com.huaiye.sdk.core.SdkCallback;
@@ -15,10 +18,6 @@ import com.huaiye.sdk.media.player.msg.SdkMsgNotifyPlayStatus;
 import com.huaiye.sdk.media.player.sdk.mix.VideoCallbackWrapper;
 import com.huaiye.sdk.media.player.sdk.params.base.VideoParams;
 import com.ttyy.commonanno.anno.BindLayout;
-import com.ttyy.commonanno.anno.BindView;
-import com.ttyy.commonanno.anno.OnClick;
-import com.ttyy.commonanno.anno.route.BindExtra;
-
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
@@ -34,21 +33,45 @@ import com.zs.common.views.MediaRecordProgress;
 @BindLayout(R.layout.activity_local_play)
 public class MediaLocalVideoPlayActivity extends AppBaseActivity {
 
-    @BindView(R.id.video_texture)
     TextureView video_texture;
-    @BindView(R.id.view_progress)
     MediaRecordProgress view_progress;
-    @BindView(R.id.iv_play_status)
     ImageView iv_play_status;
+    ImageView iv_thumbnail;
 
-    @BindExtra
     String path;
+
+    boolean isVideoPaused = false;
+    boolean initPlayer = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getNavigate().setVisibility(View.GONE);
+        setContentView(R.layout.activity_local_play);
 
+        path = getIntent().getStringExtra("path");
+    }
+
+    @Override
+    protected void initActionBar() {
+
+    }
+
+    @Override
+    public void doInitDelay() {
+        video_texture = findViewById(R.id.video_texture);
+        view_progress = findViewById(R.id.view_progress);
+        iv_play_status = findViewById(R.id.iv_play_status);
+        iv_thumbnail = findViewById(R.id.iv_thumbnail);
+
+        //加载缩略图
+        loadThumbNail();
+    }
+
+
+    /**
+     * 开始播放录像
+     */
+    private void startPlay() {
         view_progress.attachVideoTexture(video_texture);
 
         HYClient.getHYPlayer().startPlay(Player.Params.TypeVideoOfflineRecord()
@@ -76,18 +99,19 @@ public class MediaLocalVideoPlayActivity extends AppBaseActivity {
                     @Override
                     public void onVideoStatusChanged(VideoParams param, SdpMessageBase msg) {
                         super.onVideoStatusChanged(param, msg);
-                        if(msg instanceof SdkMsgNotifyPlayStatus) {
+                        if (msg instanceof SdkMsgNotifyPlayStatus) {
                             SdkMsgNotifyPlayStatus status = (SdkMsgNotifyPlayStatus) msg;
-                            if (status.isStopped()
-                                    && !isFinishing()) {
+                            if (status.isStopped() && !isFinishing()) {
 
                                 if (!status.isOperationFromUser()) {
                                     showToast(AppUtils.getString(R.string.player_complete));
-                                    finish();
+                                    resetPlayStatus();
+//                                    finish();
                                 }
 
                             }
                         }
+
                     }
 
                     @Override
@@ -99,45 +123,76 @@ public class MediaLocalVideoPlayActivity extends AppBaseActivity {
                 }));
     }
 
-    @Override
-    protected void initActionBar() {
 
+    /**
+     * 暂停播放
+     */
+    private void pausePlay(boolean value) {
+        HYClient.getHYPlayer().pausePlayEx(value, video_texture);
     }
 
-    @Override
-    public void doInitDelay() {
-
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!isVideoPaused) {
-            HYClient.getHYPlayer().pausePlayEx(false, video_texture);
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        HYClient.getHYPlayer().pausePlayEx(true, video_texture);
+        pausePlay(true);
     }
 
-    boolean isVideoPaused = false;
 
-    @OnClick(R.id.iv_play_status)
-    void onClick(View view) {
+    public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_play_status:
-                isVideoPaused = HYClient.getHYPlayer().togglePausePlayEx(video_texture)
-                        .isPlayPausedEx(video_texture);
+                //play or pause
+                if (initPlayer) {
+                    startPlay();
+                    initPlayer = false;
+                } else {
+                    isVideoPaused = HYClient.getHYPlayer().togglePausePlayEx(video_texture)
+                            .isPlayPausedEx(video_texture);
+                }
+                //set PlayStatus
                 if (isVideoPaused) {
                     iv_play_status.setImageResource(R.drawable.ic_play_start);
                 } else {
                     iv_play_status.setImageResource(R.drawable.ic_play_pause);
                 }
+                //set setThumbNailVisible
+                setThumbNailVisible(false);
                 break;
         }
+    }
+
+
+    private void loadThumbNail() {
+        Glide.with(this).load(path).into(iv_thumbnail);
+        setThumbNailVisible(true);
+    }
+
+
+    private void setThumbNailVisible(boolean visible) {
+        if (visible) {
+            iv_thumbnail.setVisibility(View.VISIBLE);
+        } else {
+            iv_thumbnail.setVisibility(View.GONE);
+        }
+    }
+
+
+    private void resetPlayStatus() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                initPlayer = true;
+                iv_play_status.setImageResource(R.drawable.ic_play_start);
+                view_progress.setCurrentTime(0);
+                setThumbNailVisible(true);
+            }
+        }, 200);
     }
 
     @Override

@@ -32,6 +32,7 @@ import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.KeyCodeEvent;
 import com.zs.bus.NetChange;
+import com.zs.bus.UploadMediaFile;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
 import com.zs.common.SP;
@@ -421,13 +422,29 @@ public class MainZSActivity extends AppBaseActivity {
                     rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
                         @Override
                         public void onMainDelay() {
-                            System.out.println("resp pre onResponse success delete " + bean.file);
-                            bean.file.delete();
+                            if(bean.file.exists()) {
+                                System.out.println("resp pre onResponse success delete " + bean.file);
+                                bean.file.delete();
+                            }
                         }
                     });
                 }
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(final UploadMediaFile bean) {
+        if(bean.bean.isUpload == 3) {
+            rxUtils.doDelayOn(300, new RxUtils.IMainDelay() {
+                @Override
+                public void onMainDelay() {
+                    if(bean.bean.file.exists()) {
+                        bean.bean.file.delete();
+                    }
+                }
+            });
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

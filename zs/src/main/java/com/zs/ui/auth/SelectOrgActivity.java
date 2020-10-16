@@ -8,10 +8,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
+import android.widget.TextView;
 
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
 import com.ttyy.commonanno.anno.OnClick;
+import com.zs.MCApp;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.recycle.LiteBaseAdapter;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 @BindLayout(R.layout.activity_selected_org)
 public class SelectOrgActivity extends AppBaseActivity {
 
+    @BindView(R.id.tv_current_address)
+    TextView tv_current_address;
     @BindView(R.id.rv_data)
     RecyclerView rv_data;
 
@@ -51,6 +55,12 @@ public class SelectOrgActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
+
+        if(MCApp.getInstance().locationService != null &&
+                MCApp.getInstance().locationService.getCurrentBDLocation() != null) {
+            tv_current_address.setText(MCApp.getInstance().locationService.getCurrentBDLocation().getAddrStr());
+        }
+
         datas.add(new OrgBean("省厅", "180.101.234.103", "36.152.32.85", "18086"));
         datas.add(new OrgBean("苏州", "2", "58.210.227.111", "8086"));
         datas.add(new OrgBean("无锡", "3", "2.20.101.118", "8086"));
@@ -69,6 +79,7 @@ public class SelectOrgActivity extends AppBaseActivity {
         datas.add(new OrgBean("演示", "16", "36.152.32.85", "18086"));
         datas.add(new OrgBean("预发布", "17", "36.152.32.85", "8086"));
         datas.add(new OrgBean("本地", "18", "192.168.0.66", "18086"));
+
         adapter = new LiteBaseAdapter<>(this,
                 datas,
                 OrgHolder.class,

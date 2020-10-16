@@ -2,16 +2,17 @@ package com.zs.ui.local;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.zs.R;
+import com.zs.bus.UploadMediaFile;
 import com.zs.common.AppUtils;
 import com.zs.common.recycle.LiteBaseAdapter;
 import com.zs.common.recycle.SafeLinearLayoutManager;
@@ -57,22 +58,34 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(FileUpload bean) {
-        if (bean.isImg) {
-            bean.file.delete();
-            int i = datas.indexOf(bean);
-            if (bean.isUpload == 3) {
-                datas.remove(i);
-                adapter.notifyItemRemoved(i);
-            } else {
-                adapter.notifyItemChanged(i);
+    public void onEvent(UploadMediaFile bean) {
+        if (!bean.bean.isImg) {
+            return;
+        }
+        for(FileUpload temp : datas) {
+            if(temp.file.getAbsolutePath().equals(bean.bean.file.getAbsolutePath())) {
+                temp.isUpload = bean.bean.isUpload;
+                temp.remainingBytes = bean.bean.remainingBytes;
+                temp.totalBytes = bean.bean.totalBytes;
+                temp.isImg = bean.bean.isImg;
+                int i = datas.indexOf(temp);
+                if (temp.isUpload == 3) {
+                    temp.file.delete();
+                    if (i != -1) {
+                        datas.remove(i);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+                break;
             }
         }
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        EventBus.getDefault().register(this);
+        if(!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
         super.onViewCreated(view, savedInstanceState);
         rcv_list = (RecyclerView) view.findViewById(R.id.rcv_list);
         rcv_list.setLayoutManager(new SafeLinearLayoutManager(getContext()));
@@ -106,8 +119,14 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                                 showToast("文件正在上传");
                                 return;
                             }
+                            int postion = datas.indexOf(bean);
+                            ArrayList<String> imageUrl = new ArrayList<>();
+                            for(FileUpload temp : datas) {
+                                imageUrl.add(temp.file.getAbsolutePath());
+                            }
                             Intent intent = new Intent(getActivity(), ImageShowActivity.class);
-                            intent.putExtra("imageUrl", bean.file.getAbsolutePath());
+                            intent.putExtra("imageUrl", imageUrl);
+                            intent.putExtra("postion", postion);
                             getActivity().startActivity(intent);
                         }
                     }
@@ -208,4 +227,5 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
             }
         }
     }
+
 }

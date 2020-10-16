@@ -13,6 +13,7 @@ import com.zs.ui.local.bean.FileUpload;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 import static com.zs.common.AppUtils.CAPTURE_TYPE;
@@ -91,6 +92,7 @@ public class MediaFileDaoUtils {
             }
         }
         SP.putString(STRING_KEY_save_video, sb.toString());
+        Collections.reverse(datas);
         return datas;
     }
 
@@ -130,6 +132,7 @@ public class MediaFileDaoUtils {
             }
         }
         SP.putString(STRING_KEY_save_video, sb.toString());
+        Collections.reverse(datas);
         return datas;
     }
 
@@ -170,6 +173,7 @@ public class MediaFileDaoUtils {
             }
         }
         SP.putString(STRING_KEY_save_photo, sb.toString());
+        Collections.reverse(datas);
         return datas;
     }
 
@@ -209,6 +213,7 @@ public class MediaFileDaoUtils {
             }
         }
         SP.putString(STRING_KEY_save_photo, sb.toString());
+        Collections.reverse(datas);
         return datas;
     }
 

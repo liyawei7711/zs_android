@@ -23,6 +23,7 @@ import com.zs.BuildConfig;
 import com.zs.MCApp;
 import com.zs.R;
 import com.zs.bus.UploadFile;
+import com.zs.bus.UploadMediaFile;
 import com.zs.common.AppUtils;
 import com.zs.common.ErrorMsg;
 import com.zs.common.SP;
@@ -30,7 +31,6 @@ import com.zs.common.dialog.LogicDialog;
 import com.zs.common.rx.RxUtils;
 import com.zs.dao.AppConstants;
 import com.zs.dao.auth.AppAuth;
-import com.zs.models.ConfigResult;
 import com.zs.models.ModelCallback;
 import com.zs.models.ModelSDKErrorResp;
 import com.zs.models.auth.bean.AnJianBean;
@@ -50,7 +50,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 
 import okhttp3.Call;
@@ -75,6 +74,7 @@ import static android.content.Context.BATTERY_SERVICE;
 import static com.zs.common.AppUtils.STRING_KEY_needload;
 import static com.zs.common.AppUtils.STRING_KEY_save_photo;
 import static com.zs.common.AppUtils.STRING_KEY_save_video;
+import static com.zs.common.AppUtils.upload_ing;
 import static com.zs.common.ErrorMsg.login_empty_code;
 import static com.zs.common.ErrorMsg.login_err_code;
 
@@ -373,6 +373,7 @@ public class AuthApi {
         }
 
     }
+
     /**
      * 出错处理
      * @param errorInfo
@@ -568,6 +569,10 @@ public class AuthApi {
     public void upload(final FileUpload tag,
                        final ModelCallback<String> callback,
                        final IUploadProgress progress) {
+       if(upload_ing.contains(tag.file.getName())) {
+           return;
+       }
+        upload_ing.add(tag.file.getName());
         UploadModelBean bean = new UploadModelBean(tag);
         OkHttpClient Client = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
@@ -606,6 +611,8 @@ public class AuthApi {
                                         if (progress != null) {
                                             progress.onProgress(tag, "553");
                                         }
+                                        EventBus.getDefault().post(new UploadMediaFile(tag));
+                                        upload_ing.remove(tag.file.getName());
                                     }
                                 });
                             }
@@ -628,6 +635,7 @@ public class AuthApi {
                     tag.totalBytes = 100;
                     tag.isUpload = 2;
                     callback.onFailure(null);
+                    upload_ing.remove(tag.file.getName());
                 } catch (Exception ex) {
 
                 }
@@ -641,9 +649,11 @@ public class AuthApi {
                     tag.remainingBytes = 100;
                     tag.totalBytes = 100;
                     tag.isUpload = 3;
+                    upload_ing.remove(tag.file.getName());
                 } catch (Exception e) {
                     tag.isUpload = 2;
                     callback.onFailure(null);
+                    upload_ing.remove(tag.file.getName());
                 }
                 new RxUtils<>().doOnThreadObMain(new RxUtils.IThreadAndMainDeal() {
                     @Override
@@ -657,6 +667,8 @@ public class AuthApi {
                             System.out.println("ccccccccccccccccccccccc start success " + tag.file.getName());
                             progress.onProgress(tag, "603");
                         }
+                        EventBus.getDefault().post(new UploadMediaFile(tag));
+                        upload_ing.remove(tag.file.getName());
                     }
                 });
 

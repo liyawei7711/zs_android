@@ -218,7 +218,7 @@ public final class AppUtils {
     public static int ptt_channel_right;
 
     public static String nEncryptPasswd = null;
-
+    public static ArrayList<String> upload_ing = new ArrayList<>();//正在上传的文件
     public static Context ctx;
     static Toast mToast;
     public static boolean isHide;
@@ -1146,6 +1146,29 @@ public final class AppUtils {
             e.printStackTrace();
         }
         return imei;
+    }
+
+    public static String secondToTime(long second) {
+        long hours = second / 3600;//转换小时数
+        second = second % 3600;//剩余秒数
+        long minutes = second / 60;//转换分钟
+        second = second % 60;//剩余秒数
+        if (hours > 0) {
+            return unitFormat(hours) + ":" + unitFormat(minutes) + ":" + unitFormat(second);
+        } else if(minutes > 0){
+            return unitFormat(minutes) + ":" + unitFormat(second);
+        } else {
+            return unitFormat(second);
+        }
+    }
+
+    private static String unitFormat(long i) {
+        String retStr;
+        if (i >= 0 && i < 10)
+            retStr = "0" + i;
+        else
+            retStr = "" + i;
+        return retStr;
     }
 
     @TargetApi(Build.VERSION_CODES.M)

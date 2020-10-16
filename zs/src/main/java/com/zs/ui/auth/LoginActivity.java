@@ -127,6 +127,10 @@ public class LoginActivity extends AppBaseActivity {
             bean = new Gson().fromJson(str, OrgBean.class);
             tv_org.setText(bean.name);
         }
+        if(!TextUtils.isEmpty(AppAuth.get().get("phone"))) {
+            String str = AppAuth.get().get("phone");
+            tv_phone.setText(str);
+        }
 
         checkPermission();
     }
@@ -225,6 +229,7 @@ public class LoginActivity extends AppBaseActivity {
     }
 
     private void jumpToMain(boolean isNoCenter, String iphone) {
+        AppAuth.get().put("phone", tv_phone.getText().toString());
         view_load.setVisibility(View.GONE);
         AppUtils.isMeet = false;
         AppUtils.isTalk = false;
