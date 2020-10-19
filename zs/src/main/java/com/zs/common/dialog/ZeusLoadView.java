@@ -216,8 +216,9 @@ public class ZeusLoadView extends Dialog {
         return (int) (density * value);
     }
 
-    public void setLoadingText(String value) {
+    public ZeusLoadView setLoadingText(String value) {
         textView.setText(value);
+        return this;
     }
 
     public void setPostText(String value) {

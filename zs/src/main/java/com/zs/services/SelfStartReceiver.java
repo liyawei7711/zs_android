@@ -21,7 +21,6 @@ public class SelfStartReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
             try {
                 Thread.sleep(2000L);

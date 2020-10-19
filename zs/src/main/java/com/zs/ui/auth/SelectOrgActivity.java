@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -58,14 +59,14 @@ public class SelectOrgActivity extends AppBaseActivity {
 
         if(MCApp.getInstance().locationService != null &&
                 MCApp.getInstance().locationService.getCurrentBDLocation() != null) {
-            tv_current_address.setText(MCApp.getInstance().locationService.getCurrentBDLocation().getAddrStr());
+            tv_current_address.setText(MCApp.getInstance().locationService.getCurrentBDLocation().getCity());
         }
 
         datas.add(new OrgBean("省厅", "180.101.234.103", "36.152.32.85", "18086"));
         datas.add(new OrgBean("苏州", "2", "58.210.227.111", "8086"));
         datas.add(new OrgBean("无锡", "3", "2.20.101.118", "8086"));
-        datas.add(new OrgBean("南京", "4", "36.152.32.85", "8086"));
-        datas.add(new OrgBean("徐州", "5", "36.152.32.85", "8086"));
+        datas.add(new OrgBean("南京", "4", "", ""));
+        datas.add(new OrgBean("徐州", "5", "", ""));
         datas.add(new OrgBean("镇江", "6", "36.156.30.203", "8086"));
         datas.add(new OrgBean("淮安", "7", "222.184.59.37", "8086"));
         datas.add(new OrgBean("宿迁", "8", "116.198.207.104", "8086"));
@@ -88,6 +89,10 @@ public class SelectOrgActivity extends AppBaseActivity {
                     @Override
                     public void onClick(View v) {
                         OrgBean bean = (OrgBean) v.getTag();
+                        if(TextUtils.isEmpty(bean.ip)) {
+                            showToast("当前地区未开通，请切换");
+                            return;
+                        }
                         bean.isSelected = !bean.isSelected;
                         for (OrgBean temp : datas) {
                             if (temp != bean) {
@@ -114,9 +119,38 @@ public class SelectOrgActivity extends AppBaseActivity {
         rv_data.setAdapter(adapter);
     }
 
-    @OnClick({R.id.tv_cancel, R.id.iv_back, R.id.tv_sure})
+    @OnClick({R.id.tv_cancel, R.id.iv_back, R.id.tv_sure, R.id.tv_current_address})
     void onBtnClicked(View view) {
         switch (view.getId()) {
+            case R.id.tv_current_address:
+                for(OrgBean bean : datas) {
+                    if(tv_current_address.getText().toString().contains(bean.name)) {
+                        if(TextUtils.isEmpty(bean.ip)) {
+                            showToast("当前地区未开通，请切换");
+                            return;
+                        }
+                        bean.isSelected = !bean.isSelected;
+                        for (OrgBean temp : datas) {
+                            if (temp != bean) {
+                                temp.isSelected = false;
+                            }
+                        }
+                        if (bean.isSelected) {
+                            current = bean;
+                        } else {
+                            current = null;
+                        }
+
+                        adapter.notifyDataSetChanged();
+                        if(current != null) {
+                            Intent intent = new Intent();
+                            intent.putExtra("org", current);
+                            setResult(Activity.RESULT_OK, intent);
+                            finish();
+                        }
+                    }
+                }
+                break;
             case R.id.tv_cancel:
             case R.id.iv_back:
                 finish();

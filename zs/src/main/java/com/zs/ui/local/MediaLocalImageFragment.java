@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,7 +46,7 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
     RecyclerView rcv_list;
     LiteBaseAdapter<FileUpload> adapter;
     List<FileUpload> datas = new ArrayList();
-
+    boolean isClick;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -74,8 +76,11 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                     if (i != -1) {
                         datas.remove(i);
                     }
+                    adapter.notifyDataSetChanged();
                 }
-                adapter.notifyDataSetChanged();
+                if(!isClick) {
+                    adapter.notifyDataSetChanged();
+                }
                 break;
             }
         }
@@ -132,6 +137,36 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                     }
                 }, "");
         rcv_list.setAdapter(adapter);
+        rcv_list.addOnItemTouchListener(new RecyclerView.OnItemTouchListener(){
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isClick = true;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        isClick = false;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        break;
+                }
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
+
     }
 
     IUploadProgress iUploadProgress = new IUploadProgress() {
@@ -145,7 +180,9 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
                         datas.remove(i);
                         adapter.notifyItemRemoved(i);
                     } else {
-                        adapter.notifyItemChanged(i);
+                        if(!isClick) {
+                            adapter.notifyItemChanged(i);
+                        }
                     }
                 }
             } else {
@@ -154,63 +191,6 @@ public class MediaLocalImageFragment extends MediaLocalBaseFragment {
             }
         }
     };
-
-    @Override
-    public void setModeEdit() {
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void clearStates() {
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void clearChoosed() {
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void chooseAll() {
-
-    }
-
-    @Override
-    public boolean isAllChoosed() {
-        int totalSize = 0;
-        for (FileUpload tmp : datas) {
-//            if (tmp.isSelected) {
-//                totalSize++;
-//            }
-        }
-        return datas.size() == totalSize;
-    }
-
-    @Override
-    public void deleteChoosed() {
-    }
-
-    @Override
-    public void uploadChoosed() {
-        Toast.makeText(getContext(), AppUtils.getString(R.string.not_support_upload_img), Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void cancelCurrentAction() {
-
-    }
-
-    @Override
-    public boolean isUploading() {
-        return false;
-    }
-
-    MediaLocalParent parent;
-
-    @Override
-    public void setParentIntf(MediaLocalParent parentIntf) {
-        parent = parentIntf;
-    }
 
     public void upLoadAll(boolean isAuto) {
         for (FileUpload tmp : datas) {

@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,6 +50,7 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     View fl_progress;
     ProgressBar pb_progress;
     TextView tv_progress;
+    boolean isClick;
 
     LiteBaseAdapter<FileUpload> adapter;
     List<FileUpload> datas = new ArrayList<>();
@@ -155,6 +158,35 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                     }
                 }, "");
         rcv_list.setAdapter(adapter);
+        rcv_list.addOnItemTouchListener(new RecyclerView.OnItemTouchListener(){
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isClick = true;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        isClick = false;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        break;
+                }
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+            }
+        });
 //        showEmty();
     }
 
@@ -165,9 +197,12 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
                 if (datas.indexOf(bean) != -1) {
                     datas.remove(bean);
                     bean.file.delete();
+                    adapter.notifyDataSetChanged();
                 }
             }
-            adapter.notifyDataSetChanged();
+            if(!isClick) {
+                adapter.notifyDataSetChanged();
+            }
         }
     };
 
@@ -175,68 +210,6 @@ public class MediaLocalVideoFragment extends MediaLocalBaseFragment {
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
 //        showEmty();
-    }
-
-    @Override
-    public void setModeEdit() {
-    }
-
-    private void showEmty() {
-        if (ll_empty != null) {
-            if (datas != null && datas.size() <= 0) {
-                ll_empty.setVisibility(View.VISIBLE);
-            } else {
-                ll_empty.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    @Override
-    public void clearStates() {
-    }
-
-    @Override
-    public void clearChoosed() {
-    }
-
-    @Override
-    public void chooseAll() {
-    }
-
-    @Override
-    public boolean isAllChoosed() {
-        return false;
-    }
-
-    @Override
-    public void deleteChoosed() {
-        showEmty();
-    }
-
-    List<Integer> uploadingIndexs = null;
-    List<Integer> uploadedIndexs = null;
-
-    @Override
-    public void uploadChoosed() {
-
-    }
-
-    @Override
-    public void cancelCurrentAction() {
-
-    }
-
-    @Override
-    public boolean isUploading() {
-        return uploadingIndexs != null && uploadingIndexs.size() > 0;
-    }
-
-    MediaLocalParent parent;
-
-    @Override
-    public void setParentIntf(MediaLocalParent parentIntf) {
-        parent = parentIntf;
-        showEmty();
     }
 
     public void upLoadAll(boolean isAuto) {

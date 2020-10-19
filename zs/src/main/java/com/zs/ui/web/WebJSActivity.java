@@ -18,6 +18,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -41,7 +42,7 @@ import com.zs.models.auth.bean.AnJianBean;
 @BindLayout(R.layout.activity_web_view)
 public class WebJSActivity extends AppBaseActivity {
     @BindView(R.id.fl_root)
-    FrameLayout fl_root;
+    LinearLayout fl_root;
     @BindView(R.id.tv_anjian)
     TextView tv_anjian;
 
@@ -59,6 +60,7 @@ public class WebJSActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
+        mZeusLoadView.setLoadingText("正在加载").setLoading();
         gson = new Gson();
         webview.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -110,6 +112,13 @@ public class WebJSActivity extends AppBaseActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            mZeusLoadView.dismiss();
+            System.out.println("cccccccccccccccccccccccccc onPageFinished");
         }
 
         @Override

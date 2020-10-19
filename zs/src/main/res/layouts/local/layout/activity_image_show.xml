@@ -4,11 +4,39 @@
     android:background="@color/black666"
     android:layout_height="match_parent">
 
-    <ImageView
+    <com.zs.ui.local.utils.ZoomImageView
         android:id="@+id/iv_photo"
         android:layout_width="match_parent"
         android:background="@color/black666"
         android:layout_height="match_parent"/>
+
+    <FrameLayout
+        android:id="@+id/iv_pre"
+        android:background="@drawable/all_circle_shapke_corners"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp">
+        <ImageView
+            android:src="@drawable/ic_navi_back_white_press"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/iv_next"
+        android:background="@drawable/all_circle_shapke_corners"
+        android:layout_gravity="center_vertical|right"
+        android:layout_marginRight="10dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp">
+        <ImageView
+            android:src="@drawable/ic_navi_back_white_press_r"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tv_current"

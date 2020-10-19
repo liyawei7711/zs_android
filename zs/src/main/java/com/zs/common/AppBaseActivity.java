@@ -134,12 +134,12 @@ public abstract class AppBaseActivity extends FragmentActivity {//implements Mes
     }
 
     private void init() {
-        new RxUtils().doDelay(10, new RxUtils.IMainDelay() {
+        new RxUtils().doDelayOn(10, new RxUtils.IMainDelay() {
             @Override
             public void onMainDelay() {
                 doInitDelay();
             }
-        }, "init");
+        });
     }
 
     protected abstract void initActionBar();

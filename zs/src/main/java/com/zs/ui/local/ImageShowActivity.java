@@ -18,10 +18,12 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.ttyy.commonanno.anno.BindLayout;
 import com.ttyy.commonanno.anno.BindView;
+import com.ttyy.commonanno.anno.OnClick;
 import com.ttyy.commonanno.anno.route.BindExtra;
 import com.zs.R;
 import com.zs.common.AppBaseActivity;
 import com.zs.common.AppUtils;
+import com.zs.ui.local.utils.ZoomImageView;
 
 import java.util.ArrayList;
 
@@ -38,7 +40,7 @@ import java.util.ArrayList;
 public class ImageShowActivity extends AppBaseActivity {
     private RequestListener requestListener;
     @BindView(R.id.iv_photo)
-    ImageView iv_photo;
+    ZoomImageView iv_photo;
     @BindView(R.id.tv_current)
     TextView tv_current;
     @BindExtra
@@ -80,6 +82,7 @@ public class ImageShowActivity extends AppBaseActivity {
                         //加载一次
                         ((GifDrawable) resource).setLoopCount(100);
                     }
+                    iv_photo.postInvalidate();
                     return false;
                 }
             };
@@ -103,31 +106,15 @@ public class ImageShowActivity extends AppBaseActivity {
         }
     }
 
-    int mTouchDownX;
-    int mLastTouchX;
-    int mLastTouchY;
-    long time;
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        int x = (int) ev.getX();
-        int y = (int) ev.getY();
-        switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                time = System.currentTimeMillis();
-                mTouchDownX = x;
-                mLastTouchY = y;
+    @OnClick({R.id.iv_next, R.id.iv_pre})
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.iv_pre:
+                loadImage(--postion);
                 break;
-            case MotionEvent.ACTION_UP:
-                if(System.currentTimeMillis() - time < 800) {
-                    mLastTouchX = x;
-                    if(mTouchDownX - mLastTouchX > AppUtils.getScreenWidth() / 3) {
-                        loadImage(++postion);
-                    } else if(mLastTouchX - mTouchDownX > AppUtils.getScreenWidth() / 3) {
-                        loadImage(--postion);
-                    }
-                }
+            case R.id.iv_next:
+                loadImage(++postion);
                 break;
         }
-        return super.onTouchEvent(ev);
     }
 }

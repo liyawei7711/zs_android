@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.zs.common.views.CheckableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="45dp"
     android:layout_marginTop="0.5dp"
+    android:gravity="center_vertical"
     android:background="@color/black666"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+    android:orientation="horizontal"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
 
         <ImageView
             android:layout_width="20dp"
@@ -34,12 +28,14 @@
         <TextView
             android:id="@+id/tv_image_name"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
             android:layout_weight="1"
             android:singleLine="true"
             android:text="asdasdasdasd"
             android:textColor="@color/white"
             android:textSize="16sp" />
+
         <TextView
             android:id="@+id/tv_image_size"
             android:layout_width="wrap_content"
@@ -65,8 +61,8 @@
                 android:layout_centerHorizontal="true"
                 android:progressDrawable="@drawable/layerlist_progressbar_hengxiang"/>
 
-            <FrameLayout                android:layout_gravity="center"
-
+            <FrameLayout
+                android:layout_gravity="center"
                 android:id="@+id/iv_upload"
                 android:layout_marginLeft="10dp"
                 android:layout_width="40dp"
@@ -81,6 +77,4 @@
 
         </FrameLayout>
 
-    </LinearLayout>
-
-</com.zs.common.views.CheckableLinearLayout>
+</LinearLayout>

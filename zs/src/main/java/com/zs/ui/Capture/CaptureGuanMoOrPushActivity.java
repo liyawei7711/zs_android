@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -26,10 +27,7 @@ import com.zs.common.AppUtils;
 import com.zs.common.rx.RxUtils;
 import com.zs.dao.auth.AppAuth;
 import com.zs.dao.msgs.StopCaptureMessage;
-import com.zs.models.ModelCallback;
-import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.AnJianBean;
-import com.zs.models.auth.bean.AuthUser;
 import com.zs.ui.home.view.CaptureViewLayout;
 
 import org.greenrobot.eventbus.EventBus;
@@ -37,8 +35,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-
-import ttyy.com.jinnetwork.core.work.HTTPResponse;
 
 @BindLayout(R.layout.activity_capture)
 public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
@@ -51,6 +47,8 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     ArrayList<SendUserBean> userList = new ArrayList<>();
     private SdpMessageCmStartSessionRsp sessionRsp;
 
+    long lastTime;
+    RxUtils rxUtils = new RxUtils();
     @Override
     protected void initActionBar() {
         getNavigate().setVisibility(View.GONE);
@@ -65,13 +63,40 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 
     @Override
     public void doInitDelay() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        rxUtils.clearAll();
+        startTime();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         initData();
+
+        getWindow().setCallback(new WinCallback(getWindow().getCallback()){
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_MOVE:
+                        rxUtils.clearAll();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        System.out.println("ccccccccccccccccccccccccccc ACTION_UP");
+                        startTime();
+                        break;
+                }
+                return super.dispatchTouchEvent(event);
+            }
+        });
     }
 
+    private void startTime() {
+        rxUtils.doDelay(30 * 1000, new RxUtils.IMainDelay() {
+            @Override
+            public void onMainDelay() {
+                captureView.clockScreen();
+            }
+        }, "stop"+System.currentTimeMillis());
+    }
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -98,7 +123,17 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            changeAnJian();
+            if(requestCode == 1000) {
+                showToast("拍照成功，正在处理");
+                captureView.startPreviewVideo(false);
+                captureView.pushLocalData(captureView.mMediaImgFile.getRecordPath());
+            } else {
+                changeAnJian();
+            }
+        } else {
+            if(requestCode == 1000) {
+                captureView.startPreviewVideo(false);
+            }
         }
     }
 
@@ -168,7 +203,9 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 //                }
             } else {//变动前有网络
                 //现在无网络
-                showToast("网络断开，请重新录制");
+                if(captureView.isStart){
+                    showToast("网络断开，录制的视频已保存");
+                }
                 if(!captureView.onBackPressed(false, false)) {
                     super.onBackPressed();
                 }
@@ -199,6 +236,7 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
 
     @Override
     public void onBackPressed() {
+        rxUtils.clearAll();
         if (captureView.onBackPressed(true, false)) {
 
         } else {
@@ -209,9 +247,9 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (MCApp.getInstance().getTopActivity() != null) {
-            MCApp.getInstance().getTopActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        }
+//        if (MCApp.getInstance().getTopActivity() != null) {
+//            MCApp.getInstance().getTopActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        }
         AppUtils.isCaptureLayoutShowing = true;
         MCApp.getInstance().guanMoOrPushActivity = null;
         EventBus.getDefault().unregister(this);
@@ -220,12 +258,14 @@ public class CaptureGuanMoOrPushActivity extends AppBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startTime();
         captureView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        rxUtils.clearAll();
         captureView.onPause();
     }
 

@@ -1,8 +1,13 @@
 package com.zs.ui.home.view;
 
 import android.app.Activity;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -16,6 +21,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 
 import com.baidu.location.BDLocation;
 import com.huaiye.cmf.sdp.SdpMessageBase;
@@ -37,6 +43,7 @@ import com.zs.dao.MediaFileDaoUtils;
 import com.zs.dao.auth.AppAuth;
 import com.zs.models.auth.AuthApi;
 import com.zs.models.auth.bean.AnJianBean;
+import com.zs.services.AdminReceiver;
 import com.zs.ui.home.MainZSActivity;
 import com.zs.ui.local.PhotoAndVideoActivity;
 import com.zs.ui.local.bean.FileUpload;
@@ -245,38 +252,61 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             case R.id.iv_suofang:
                 break;
             case R.id.iv_take_photo:
+                if(isStart) {
+                    showToast("正在录制");
+                    return;
+                }
+                if (HYClient.getMemoryChecker().checkEnough()) {
+                    HYClient.getHYCapture().stopCapture(null);
+                    //拍照存放路径
+                    mMediaImgFile = MediaFileDaoUtils.get().getImgRecordFile();
+
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    Uri uri;
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".provider", new File(mMediaImgFile.getRecordPath()));
+                    } else {
+                        uri = Uri.fromFile(new File(mMediaImgFile.getRecordPath()));
+                    }
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                    ((Activity)getContext()).startActivityForResult(intent, 1000);
+                } else {
+                    if (getVisibility() != GONE) {
+                        ((AppBaseActivity) getContext()).showToast(AppUtils.getString(R.string.local_size_max));
+                    }
+                }
 //                if (isStart) {
 //                    showToast("正在录像，不可拍照");
 //                    return;
 //                }
-                if (System.currentTimeMillis() - lstTakePicker < 1300) {
-                    showToast("正在处理上传，请稍后");
-                    return;
-                }
-                mMediaImgFile = MediaFileDaoUtils.get().getImgRecordFile();
-                lstTakePicker = System.currentTimeMillis();
-                if (HYClient.getMemoryChecker().checkEnough()) {
-                    final String finalStr = mMediaImgFile == null ? "" : mMediaImgFile.getRecordPath();
-                    HYClient.getHYCapture().snapShotCapture(mMediaImgFile.getRecordPath(), new SdkCallback<String>() {
-
-                        @Override
-                        public void onSuccess(String s) {
-                            AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
-                            new RxUtils<>().doDelayOn(1000, new RxUtils.IMainDelay() {
-                                @Override
-                                public void onMainDelay() {
-                                    showToast("拍照成功，正在处理");
-                                    pushLocalData(finalStr);
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onError(ErrorInfo errorInfo) {
-
-                        }
-                    });
-                }
+//                if (System.currentTimeMillis() - lstTakePicker < 1300) {
+//                    showToast("正在处理上传，请稍后");
+//                    return;
+//                }
+//                mMediaImgFile = MediaFileDaoUtils.get().getImgRecordFile();
+//                lstTakePicker = System.currentTimeMillis();
+//                if (HYClient.getMemoryChecker().checkEnough()) {
+//                    final String finalStr = mMediaImgFile == null ? "" : mMediaImgFile.getRecordPath();
+//                    HYClient.getHYCapture().snapShotCapture(mMediaImgFile.getRecordPath(), new SdkCallback<String>() {
+//
+//                        @Override
+//                        public void onSuccess(String s) {
+//                            AlarmMediaPlayer.get().play(true, SOURCE_PERSON_VOICE, null, null);
+//                            new RxUtils<>().doDelayOn(1000, new RxUtils.IMainDelay() {
+//                                @Override
+//                                public void onMainDelay() {
+//                                    showToast("拍照成功，正在处理");
+//                                    pushLocalData(finalStr);
+//                                }
+//                            });
+//                        }
+//
+//                        @Override
+//                        public void onError(ErrorInfo errorInfo) {
+//
+//                        }
+//                    });
+//                }
                 break;
         }
     }
@@ -383,7 +413,7 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
             iv_start_stop.setImageResource(R.drawable.zs_start_bg);
         }
 
-        ((Activity) getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        ((Activity) getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ViewGroup.LayoutParams lp = ttv_capture.getLayoutParams();
         lp.height = calcHeightHeight();
         ttv_capture.setLayoutParams(lp);
@@ -654,6 +684,21 @@ public class CaptureViewLayout extends FrameLayout implements View.OnClickListen
         tv_quxiao.setEnabled(enable);
         iv_camera.setEnabled(enable);
         iv_take_photo.setEnabled(enable);
+    }
+
+    public void clockScreen() {
+        //获取设备管理服务
+        DevicePolicyManager policyManager = (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
+
+        //AdminReceiver 继承自 DeviceAdminReceiver
+        ComponentName componentName = new ComponentName(getContext(), AdminReceiver.class);
+
+        boolean active = policyManager.isAdminActive(componentName);
+        if (active) {
+            policyManager.lockNow();//直接锁屏
+        }
+        //  killMyself ，锁屏之后就立即kill掉我们的Activity，避免资源的浪费;
+//        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     public interface ICaptureStateChangeListener {
